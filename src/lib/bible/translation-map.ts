@@ -33,8 +33,8 @@ const SEED: ResolvedTranslation[] = [
   },
   {
     yvId: 111,
-    yvAbbrev: "NIV",
-    title: "New International Version",
+    yvAbbrev: "NIV11",
+    title: "New International Version 2011",
   },
 ];
 
@@ -45,6 +45,7 @@ const ALIASES = new Map<string, number>([
   ["ASV", 12],
   ["ENG_ASV", 12],
   ["WEBUS", 206],
+  ["ENGWEBUS", 206],
   ["WEB", 206],
   ["ENGWEBP", 206],
   ["ENG_WEB", 206],
@@ -52,6 +53,12 @@ const ALIASES = new Map<string, number>([
   ["ENG_WEBU", 206],
   ["ENG_WEU", 206],
   ["NIV", 111],
+  ["NIV11", 111],
+  ["AMP", 1588],
+  ["NASB1995", 100],
+  ["NASB2020", 2692],
+  ["NIRV", 110],
+  ["NIVUK11", 113],
 ]);
 
 let dynamic: Map<string, number> | null = null;

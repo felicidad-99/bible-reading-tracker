@@ -275,7 +275,7 @@ export default function OnboardingPage() {
               ))}
             </select>
             <p className="mt-3 text-sm text-ink-muted">
-              Only free / public-domain-friendly complete translations are listed.
+              Complete English translations from licensed YouVersion and free public-domain sources (including KJV).
             </p>
           </div>
         )}

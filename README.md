@@ -31,8 +31,10 @@ A production-ready web app for creating a personalized Bible reading plan, track
 ## Scripture providers
 
 - **YouVersion Platform API** (when `YVP_APP_KEY` is set): licensed versions available to your app key, required attribution/copyright in the reader
-- **Free Use Bible API** (default/fallback): no key, public-domain-friendly English Bibles
+- **Free Use Bible API** (default/fallback): no key, public-domain-friendly English Bibles (KJV, WEB, Darby, etc.)
+- Translation dropdown is a **merged** list of both providers (YouVersion preferred when both have the same version)
 - Missing key, rate limits, or YouVersion errors automatically fall back to Free Use
+- NKJV / NLT / ESV / CSB are **not** listed unless licensed for your YouVersion app key (they are not on Free Use)
 
 ## Local development
 

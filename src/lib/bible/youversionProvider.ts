@@ -119,6 +119,10 @@ export class YouVersionProvider implements BibleServiceProvider {
     });
 
     if (versesRes.status === 404) {
+      const bibleExists = await this.bibleExists(resolved.yvId);
+      if (!bibleExists) {
+        throw new UnmappedTranslationError(translationId);
+      }
       throw new BibleReferenceError(
         `${bookId} ${chapter} is not a valid reference`
       );
@@ -169,6 +173,17 @@ export class YouVersionProvider implements BibleServiceProvider {
     throw new Error("YouVersion returned empty chapter content");
   }
 
+  private async bibleExists(yvId: number): Promise<boolean> {
+    try {
+      const res = await this.fetchImpl(`${BASE_URL}/bibles/${yvId}`, {
+        headers: this.headers(),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
   private async fetchPassageHtml(
     yvId: number,
     bookId: string,
@@ -180,6 +195,9 @@ export class YouVersionProvider implements BibleServiceProvider {
     const res = await this.fetchImpl(url, { headers: this.headers() });
 
     if (res.status === 404) {
+      if (!(await this.bibleExists(yvId))) {
+        throw new UnmappedTranslationError(String(yvId));
+      }
       throw new BibleReferenceError(
         `${bookId} ${chapter} is not a valid reference`
       );
@@ -201,6 +219,9 @@ export class YouVersionProvider implements BibleServiceProvider {
     const res = await this.fetchImpl(url, { headers: this.headers() });
 
     if (res.status === 404) {
+      if (!(await this.bibleExists(yvId))) {
+        throw new UnmappedTranslationError(String(yvId));
+      }
       throw new BibleReferenceError(
         `${bookId} ${chapter} is not a valid reference`
       );
@@ -227,7 +248,7 @@ export class YouVersionProvider implements BibleServiceProvider {
       bookId,
       bookName: book?.name ?? bookId,
       chapter,
-      translationId: meta?.yvAbbrev || translationId,
+      translationId,
       translationName: name,
       verses,
       copyright: meta?.copyright,

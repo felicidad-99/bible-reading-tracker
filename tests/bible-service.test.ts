@@ -129,6 +129,21 @@ describe("BibleService fallback", () => {
     expect(fallback.calls.chapter).toBe(1);
   });
 
+  it("keeps the requested translation id on Free Use fallback", async () => {
+    const primary = new MockProvider(async () => {
+      throw new UnmappedTranslationError("KJV");
+    });
+    const fallback = new MockProvider(async () =>
+      chapterResult("helloao", { translationId: "eng_kjv" })
+    );
+    const service = new BibleService(primary, fallback);
+
+    const result = await service.getChapter("KJV", "JHN", 3);
+
+    expect(result.source).toBe("helloao");
+    expect(result.translationId).toBe("KJV");
+  });
+
   it("does not fall back on BibleReferenceError from primary", async () => {
     const primary = new MockProvider(async () => {
       throw new BibleReferenceError("JHN 999 is not a valid reference");
@@ -153,22 +168,80 @@ describe("BibleService fallback", () => {
     expect(fallback.calls.translations).toBe(0);
   });
 
-  it("returns primary translations when available", async () => {
+  it("merges primary and fallback translations", async () => {
     const primary = new MockProvider(
       async () => chapterResult("youversion"),
       async () => translationList("NIV")
     );
     const fallback = new MockProvider(
       async () => chapterResult("helloao"),
-      async () => translationList("BSB")
+      async () => [...translationList("KJV"), ...translationList("BSB")]
     );
     const service = new BibleService(primary, fallback);
 
     const list = await service.getTranslations();
+    const ids = list.map((t) => t.id);
 
-    expect(list[0]?.id).toBe("NIV");
     expect(primary.calls.translations).toBe(1);
-    expect(fallback.calls.translations).toBe(0);
+    expect(fallback.calls.translations).toBe(1);
+    expect(ids).toContain("NIV");
+    expect(ids).toContain("KJV");
+    expect(ids).toContain("BSB");
+  });
+
+  it("prefers primary entry when both lists have the same version", async () => {
+    const primary = new MockProvider(
+      async () => chapterResult("youversion"),
+      async () => [
+        {
+          ...translationList("BSB")[0],
+          name: "Berean Standard Bible (YV)",
+          englishName: "Berean Standard Bible (YV)",
+        },
+      ]
+    );
+    const fallback = new MockProvider(
+      async () => chapterResult("helloao"),
+      async () => [
+        {
+          ...translationList("BSB")[0],
+          name: "BSB Free",
+          englishName: "BSB Free",
+        },
+      ]
+    );
+    const service = new BibleService(primary, fallback);
+
+    const list = await service.getTranslations();
+    const bsb = list.find((t) => t.id === "BSB");
+
+    expect(bsb?.englishName).toBe("Berean Standard Bible (YV)");
+  });
+
+  it("normalizes Free Use ids to friendly display ids", async () => {
+    const fallback = new MockProvider(
+      async () => chapterResult("helloao"),
+      async () => [
+        {
+          ...translationList("eng_kjv")[0],
+          name: "King James Version",
+          englishName: "King James Version",
+        },
+        {
+          ...translationList("eng_dby")[0],
+          name: "Darby Translation",
+          englishName: "Darby Translation",
+        },
+      ]
+    );
+    const service = new BibleService(null, fallback);
+
+    const list = await service.getTranslations();
+    const ids = list.map((t) => t.id);
+
+    expect(ids).toContain("KJV");
+    expect(ids).toContain("DARBY");
+    expect(ids).not.toContain("eng_kjv");
   });
 
   it("falls back to Free Use translations when primary list fails", async () => {
@@ -297,15 +370,40 @@ describe("YouVersionProvider parsing", () => {
     ]);
   });
 
-  it("throws BibleReferenceError on 404 verses", async () => {
+  it("throws BibleReferenceError on 404 verses when bible exists", async () => {
     process.env.YVP_APP_KEY = "test-key";
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/v1/bibles/3034") && !url.includes("/books/") && !url.includes("/passages/")) {
+        return new Response(
+          JSON.stringify({
+            id: 3034,
+            abbreviation: "BSB",
+            title: "Berean Standard Bible",
+            copyright: "Public Domain",
+          }),
+          { status: 200 }
+        );
+      }
+      return new Response("missing", { status: 404 });
+    });
+    const provider = new YouVersionProvider("test-key", fetchMock as typeof fetch);
+
+    await expect(provider.getChapter("BSB", "JHN", 999)).rejects.toBeInstanceOf(
+      BibleReferenceError
+    );
+  });
+
+  it("throws UnmappedTranslationError when bible id itself is 404", async () => {
+    process.env.YVP_APP_KEY = "test-key";
+    resetTranslationMapForTests();
     const fetchMock = vi.fn(
       async () => new Response("missing", { status: 404 })
     );
     const provider = new YouVersionProvider("test-key", fetchMock as typeof fetch);
 
-    await expect(provider.getChapter("BSB", "JHN", 999)).rejects.toBeInstanceOf(
-      BibleReferenceError
+    await expect(provider.getChapter("BSB", "JHN", 3)).rejects.toBeInstanceOf(
+      UnmappedTranslationError
     );
   });
 

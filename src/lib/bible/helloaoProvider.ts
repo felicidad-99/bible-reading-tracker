@@ -123,7 +123,7 @@ export class HelloAoProvider implements BibleServiceProvider {
       bookId,
       bookName: data?.book?.name ?? bookId,
       chapter,
-      translationId: data?.translation?.id ?? translationId,
+      translationId,
       translationName:
         data?.translation?.englishName ??
         data?.translation?.name ??
