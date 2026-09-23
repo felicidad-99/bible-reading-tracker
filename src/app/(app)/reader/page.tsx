@@ -30,6 +30,8 @@ interface ChapterPayload {
   translationId: string;
   translationName: string;
   verses: Array<{ number: number; text: string }>;
+  copyright?: string;
+  source?: "youversion" | "helloao";
 }
 
 const SESSION_NAMES = ["Morning", "Afternoon", "Evening"];
@@ -408,6 +410,9 @@ function ReaderInner() {
               </>
             )}
           </p>
+          {chapter?.copyright && (
+            <p className="mt-1 text-xs text-ink-subtle">{chapter.copyright}</p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <span className={`status-pill status-${status === "completed" ? "completed" : status === "in_progress" || status === "in-progress" ? "in-progress" : status === "missed" ? "missed" : "not-started"}`}>
@@ -503,6 +508,11 @@ function ReaderInner() {
                 </p>
               )}
             </div>
+            {chapter.copyright && (
+              <p className="mt-8 pt-4 border-t border-line text-xs font-sans text-ink-subtle">
+                {chapter.copyright}
+              </p>
+            )}
           </div>
         )}
       </article>

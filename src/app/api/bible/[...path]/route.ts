@@ -23,15 +23,13 @@ export async function GET(
     return NextResponse.json({ error: "Invalid chapter number" }, { status: 400 });
   }
 
-  if (!/^[A-Za-z0-9-]{1,10}$/.test(translationId) || !/^[A-Za-z0-9]{1,8}$/.test(bookId)) {
+  if (!/^[A-Za-z0-9_-]{1,15}$/.test(translationId) || !/^[A-Za-z0-9]{1,8}$/.test(bookId)) {
     return NextResponse.json({ error: "Invalid reference" }, { status: 400 });
   }
 
   try {
     const result = await bibleService.getChapter(
-      translationId.toUpperCase() === translationId || translationId.length <= 4
-        ? translationId
-        : translationId,
+      translationId,
       bookId.toUpperCase(),
       chapter
     );

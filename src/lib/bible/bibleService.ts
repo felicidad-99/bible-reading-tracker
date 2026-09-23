@@ -1,172 +1,24 @@
-export interface ChapterVerse {
-  number: number;
-  text: string;
-}
+import type {
+  BibleServiceProvider,
+  ChapterResult,
+  TranslationInfo,
+} from "./types";
+import {
+  BibleReferenceError,
+  UnmappedTranslationError,
+} from "./types";
+import { HelloAoProvider } from "./helloaoProvider";
+import { YouVersionProvider } from "./youversionProvider";
 
-export interface ChapterResult {
-  bookId: string;
-  bookName: string;
-  chapter: number;
-  translationId: string;
-  translationName: string;
-  verses: ChapterVerse[];
-}
-
-export interface TranslationInfo {
-  id: string;
-  name: string;
-  englishName: string;
-  language: string;
-  languageEnglishName?: string;
-  shortName: string;
-  textDirection: "ltr" | "rtl";
-  numberOfBooks: number;
-  totalNumberOfChapters: number;
-}
-
-export interface BibleServiceProvider {
-  getTranslations(): Promise<TranslationInfo[]>;
-  getChapter(
-    translationId: string,
-    bookId: string,
-    chapter: number
-  ): Promise<ChapterResult>;
-}
-
-const BIBLE_API_URL = process.env.BIBLE_API_URL || "https://bible.helloao.org";
-
-const FREE_TRANSLATIONS = new Set([
-  "BSB",
-  "KJV",
-  "WEB",
-  "ASV",
-  "WEBB",
-  "OEBUS",
-  "OEB-CW",
-  "BBE",
-  "DARBY",
-  "YLT",
-  "engwebp",
-  "clementine",
-  // Actual IDs on bible.helloao.org
-  "eng_kjv",
-  "ENGWEBP",
-  "eng_web",
-  "eng_webpb",
-  "eng_webu",
-  "eng_weu",
-  "eng_asv",
-  "eng_abt",
-  "eng_bbe",
-  "eng_dby",
-  "eng_ylt",
-  "eng_wbs",
-  "eng_gnv",
-  "eng_rv5",
-  "eng_lsv",
-  "eng_msb",
-  "eng_fbv",
-  "eng_t4t",
-  "eng_ulb",
-  "eng_wmb",
-  "eng_wmu",
-  "eng_wyc2017",
-  "eng_wyc2018",
-  "eng_cpb",
-  "eng_kja",
-  "AAB",
-]);
-
-const LICENSE_BLOCKLIST = new Set([
-  "eng_net", // NET Bible: free non-commercial only
-]);
-
-export class HelloAoProvider implements BibleServiceProvider {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = BIBLE_API_URL) {
-    this.baseUrl = baseUrl.replace(/\/$/, "");
-  }
-
-  async getTranslations(): Promise<TranslationInfo[]> {
-    const res = await fetch(
-      `${this.baseUrl}/api/available_translations.json`,
-      { next: { revalidate: 86400 } }
-    );
-    if (!res.ok) throw new Error("Failed to load translations");
-    const data = (await res.json()) as { translations: TranslationInfo[] };
-
-    return data.translations.filter((t) => {
-      if (t.totalNumberOfChapters !== 1189) return false;
-      if (LICENSE_BLOCKLIST.has(t.id)) return false;
-      if (t.language && t.language !== "eng" && !t.language.startsWith("eng")) {
-        return false;
-      }
-      if (FREE_TRANSLATIONS.has(t.id)) return true;
-      const license = (t as { licenseUrl?: string }).licenseUrl ?? "";
-      if (/public[-_ ]?domain|creativecommons\.org\/publicdomain|cc0/i.test(license)) {
-        return true;
-      }
-      if (/ebible\.org|helloao\.org/i.test(license) && /eng/i.test(t.id)) {
-        return true;
-      }
-      return false;
-    });
-  }
-
-  async getChapter(
-    translationId: string,
-    bookId: string,
-    chapter: number
-  ): Promise<ChapterResult> {
-    const res = await fetch(
-      `${this.baseUrl}/api/${encodeURIComponent(translationId)}/${encodeURIComponent(
-        bookId
-      )}/${chapter}.simple.json`,
-      { next: { revalidate: 86400 } }
-    );
-
-    if (res.status === 404) {
-      throw new BibleReferenceError(
-        `${bookId} ${chapter} is not a valid reference`
-      );
-    }
-    if (!res.ok) {
-      throw new Error(`Bible API returned ${res.status}`);
-    }
-
-    const data = await res.json();
-    const verses: ChapterVerse[] = [];
-    const content = data?.chapter?.content ?? [];
-    for (const item of content) {
-      if (item?.type === "verse") {
-        verses.push({
-          number: item.number,
-          text: String(item.text ?? "").trim(),
-        });
-      }
-    }
-
-    return {
-      bookId,
-      bookName: data?.book?.name ?? bookId,
-      chapter,
-      translationId: data?.translation?.id ?? translationId,
-      translationName:
-        data?.translation?.englishName ??
-        data?.translation?.name ??
-        translationId,
-      verses,
-    };
-  }
-}
-
-export class BibleReferenceError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "BibleReferenceError";
-  }
-}
+export type {
+  BibleServiceProvider,
+  ChapterResult,
+  ChapterVerse,
+  TranslationInfo,
+} from "./types";
+export { BibleReferenceError, UnmappedTranslationError } from "./types";
+export { HelloAoProvider } from "./helloaoProvider";
+export { YouVersionProvider } from "./youversionProvider";
 
 const memoryCache = new Map<
   string,
@@ -174,15 +26,34 @@ const memoryCache = new Map<
 >();
 const CACHE_TTL = 1000 * 60 * 60 * 24;
 
-export class BibleService {
-  private provider: BibleServiceProvider;
+export function clearBibleCacheForTests(): void {
+  memoryCache.clear();
+}
 
-  constructor(provider: BibleServiceProvider = new HelloAoProvider()) {
-    this.provider = provider;
+export class BibleService {
+  private primary: BibleServiceProvider | null;
+  private fallback: BibleServiceProvider;
+
+  constructor(
+    primary: BibleServiceProvider | null = YouVersionProvider.isEnabled()
+      ? new YouVersionProvider(process.env.YVP_APP_KEY as string)
+      : null,
+    fallback: BibleServiceProvider = new HelloAoProvider()
+  ) {
+    this.primary = primary;
+    this.fallback = fallback;
   }
 
-  getTranslations(): Promise<TranslationInfo[]> {
-    return this.provider.getTranslations();
+  async getTranslations(): Promise<TranslationInfo[]> {
+    if (this.primary) {
+      try {
+        const list = await this.primary.getTranslations();
+        if (list.length > 0) return list;
+      } catch {
+        // Fall through to Free Use API
+      }
+    }
+    return this.fallback.getTranslations();
   }
 
   async getChapter(
@@ -190,18 +61,45 @@ export class BibleService {
     bookId: string,
     chapter: number
   ): Promise<ChapterResult> {
-    const key = `${translationId}:${bookId}:${chapter}`;
-    const hit = memoryCache.get(key);
+    const cacheKey = `${translationId}:${bookId}:${chapter}`;
+    const hit = memoryCache.get(cacheKey);
     if (hit && hit.expires > Date.now()) {
       return hit.value;
     }
 
-    const result = await this.provider.getChapter(
-      translationId,
-      bookId,
-      chapter
-    );
-    memoryCache.set(key, { value: result, expires: Date.now() + CACHE_TTL });
+    let result: ChapterResult | null = null;
+    let primaryError: unknown = null;
+
+    if (this.primary) {
+      try {
+        result = await this.primary.getChapter(translationId, bookId, chapter);
+      } catch (err) {
+        if (err instanceof BibleReferenceError) throw err;
+        primaryError = err;
+        if (!(err instanceof UnmappedTranslationError)) {
+          // Provider/transient failure → try Free Use API
+        }
+      }
+    }
+
+    if (!result) {
+      try {
+        result = await this.fallback.getChapter(
+          translationId,
+          bookId,
+          chapter
+        );
+      } catch (err) {
+        if (err instanceof BibleReferenceError) throw err;
+        if (primaryError) throw primaryError;
+        throw err;
+      }
+    }
+
+    memoryCache.set(cacheKey, {
+      value: result,
+      expires: Date.now() + CACHE_TTL,
+    });
     return result;
   }
 }

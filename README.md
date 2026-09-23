@@ -7,7 +7,7 @@ A production-ready web app for creating a personalized Bible reading plan, track
 - Dynamic reading-plan generator (1,189 chapters, no skips or duplicates)
 - Once / twice / thrice daily sessions at custom times
 - Dashboard, calendar, statistics, streaks
-- In-app Bible reader (Free Use Bible API)
+- In-app Bible reader (YouVersion Platform API, Free Use API fallback)
 - Missed reading detection with continue / catch-up options
 - Plan editing without losing completed history
 - Email/password auth with Gmail SMTP password reset
@@ -24,17 +24,15 @@ A production-ready web app for creating a personalized Bible reading plan, track
 | Database | PostgreSQL (Supabase) + Prisma |
 | Auth | Auth.js (NextAuth v5) credentials |
 | Email | Nodemailer via Gmail SMTP |
-| Bible API | [Free Use Bible API](https://bible.helloao.org) |
+| Bible API | [YouVersion Platform](https://platform.youversion.com) primary, [Free Use Bible API](https://bible.helloao.org) fallback |
 | Hosting | Vercel |
 | Tests | Vitest |
 
-## Why Free Use Bible API
+## Scripture providers
 
-- Free, no API keys, no rate limits
-- CORS-enabled JSON endpoints
-- 1,000+ translations; filtered to public-domain-friendly complete Bibles
-- Official TypeScript SDK available
-- Service-layer abstraction allows swapping providers
+- **YouVersion Platform API** (when `YVP_APP_KEY` is set): licensed versions available to your app key, required attribution/copyright in the reader
+- **Free Use Bible API** (default/fallback): no key, public-domain-friendly English Bibles
+- Missing key, rate limits, or YouVersion errors automatically fall back to Free Use
 
 ## Local development
 
@@ -73,7 +71,8 @@ See `.env.example`:
 - `AUTH_SECRET` - `openssl rand -base64 32`
 - `NEXT_PUBLIC_APP_URL` - e.g. `http://localhost:3000` or Vercel URL
 - `EMAIL_SERVER` / `EMAIL_FROM` - Gmail SMTP for password reset
-- `BIBLE_API_URL` - defaults to `https://bible.helloao.org`
+- `BIBLE_API_URL` - Free Use API base; defaults to `https://bible.helloao.org`
+- `YVP_APP_KEY` - YouVersion Platform App Key (optional primary provider)
 
 ## Scripts
 

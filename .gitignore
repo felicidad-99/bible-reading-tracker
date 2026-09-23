@@ -25,3 +25,6 @@ yarn-error.log*
 prisma/*.db
 coverage/
 reports/
+
+.vercel
+.env*
