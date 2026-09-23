@@ -48,6 +48,37 @@ const FREE_TRANSLATIONS = new Set([
   "YLT",
   "engwebp",
   "clementine",
+  // Actual IDs on bible.helloao.org
+  "eng_kjv",
+  "ENGWEBP",
+  "eng_web",
+  "eng_webpb",
+  "eng_webu",
+  "eng_weu",
+  "eng_asv",
+  "eng_abt",
+  "eng_bbe",
+  "eng_dby",
+  "eng_ylt",
+  "eng_wbs",
+  "eng_gnv",
+  "eng_rv5",
+  "eng_lsv",
+  "eng_msb",
+  "eng_fbv",
+  "eng_t4t",
+  "eng_ulb",
+  "eng_wmb",
+  "eng_wmu",
+  "eng_wyc2017",
+  "eng_wyc2018",
+  "eng_cpb",
+  "eng_kja",
+  "AAB",
+]);
+
+const LICENSE_BLOCKLIST = new Set([
+  "eng_net", // NET Bible: free non-commercial only
 ]);
 
 export class HelloAoProvider implements BibleServiceProvider {
@@ -67,9 +98,16 @@ export class HelloAoProvider implements BibleServiceProvider {
 
     return data.translations.filter((t) => {
       if (t.totalNumberOfChapters !== 1189) return false;
+      if (LICENSE_BLOCKLIST.has(t.id)) return false;
+      if (t.language && t.language !== "eng" && !t.language.startsWith("eng")) {
+        return false;
+      }
       if (FREE_TRANSLATIONS.has(t.id)) return true;
       const license = (t as { licenseUrl?: string }).licenseUrl ?? "";
       if (/public[-_ ]?domain|creativecommons\.org\/publicdomain|cc0/i.test(license)) {
+        return true;
+      }
+      if (/ebible\.org|helloao\.org/i.test(license) && /eng/i.test(t.id)) {
         return true;
       }
       return false;
