@@ -8,13 +8,13 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --exclude **/yv-live.test.ts",
+    "test": "vitest run --exclude **/yv-live.test.ts --exclude **/audio-live.test.ts",
     "test:watch": "vitest",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "postinstall": "prisma generate",
-    "test:live": "vitest run tests/yv-live.test.ts"
+    "test:live": "vitest run tests/yv-live.test.ts tests/audio-live.test.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",

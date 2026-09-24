@@ -8,6 +8,7 @@ A production-ready web app for creating a personalized Bible reading plan, track
 - Once / twice / thrice daily sessions at custom times
 - Dashboard, calendar, statistics, streaks
 - In-app Bible reader (YouVersion Platform API, Free Use API fallback)
+- In-app audio Bible player (play/pause, seek, speed; marks chapter read on end)
 - Missed reading detection with continue / catch-up options
 - Plan editing without losing completed history
 - Email/password auth with Gmail SMTP password reset
@@ -35,6 +36,14 @@ A production-ready web app for creating a personalized Bible reading plan, track
 - Translation dropdown is a **merged** list of both providers (YouVersion preferred when both have the same version)
 - Missing key, rate limits, or YouVersion errors automatically fall back to Free Use
 - NKJV / NLT / ESV / CSB are **not** listed unless licensed for your YouVersion app key (they are not on Free Use)
+
+## Audio Bible
+
+- **Public domain fallback** (default, no key): full KJV chapter MP3s from Internet Archive item [`kjvmp3`](https://archive.org/details/kjvmp3), streamed through an auth-gated proxy with HTTP Range support
+- **Bible Brain** (when `BRAIN_API_KEY` is set): preferred source; can supply verse timings so the reader highlights the active verse while audio plays
+- Verse highlight UI only appears when timings are present (public-domain files have none)
+- Reader marks the chapter read when playback reaches the end
+- Known gap: Galatians 7 is missing from the public-domain archive (shown as unavailable until Bible Brain provides it)
 
 ## Local development
 
@@ -75,6 +84,8 @@ See `.env.example`:
 - `EMAIL_SERVER` / `EMAIL_FROM` - Gmail SMTP for password reset
 - `BIBLE_API_URL` - Free Use API base; defaults to `https://bible.helloao.org`
 - `YVP_APP_KEY` - YouVersion Platform App Key (optional primary provider)
+- `BRAIN_API_KEY` - Bible Brain API key (optional primary audio; empty = public-domain audio only)
+- `BRAIN_API_URL` - optional Bible Brain base URL; defaults to `https://4.dbt.io/api`
 
 ## Scripts
 
@@ -85,7 +96,8 @@ See `.env.example`:
 | `npm run start` | Start production server |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript check |
-| `npm test` | Plan generator unit tests |
+| `npm test` | Plan generator + Bible service + audio unit tests |
+| `npm run test:live` | Live smoke (YouVersion + public-domain audio) |
 | `npx prisma db push` | Push schema to database |
 | `npx prisma migrate deploy` | Run migrations |
 
@@ -109,9 +121,10 @@ See `.env.example`:
 
 ```bash
 npm test
+npm run test:live   # optional network smoke
 ```
 
-Covers 7/30/365-day plans, frequencies 1–3, edge cases (1-day, month-end, leap year), streaks, statuses, regeneration.
+Covers 7/30/365-day plans, frequencies 1–3, edge cases (1-day, month-end, leap year), streaks, statuses, regeneration, Scripture provider fallback, and audio URL/service behavior.
 
 ## Known limitations
 

@@ -29,6 +29,10 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
 
   if (url.origin === self.location.origin && url.pathname.startsWith("/api/bible/")) {
+    // Never cache audio streams (large files + Range requests).
+    if (url.pathname.startsWith("/api/bible/audio/")) {
+      return;
+    }
     event.respondWith(
       caches.match(request).then((cached) => {
         const network = fetch(request)

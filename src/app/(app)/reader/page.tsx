@@ -8,6 +8,8 @@ import {
   getBookById,
 } from "@/lib/plan/bible-books";
 import type { ChapterRange } from "@/lib/plan/generator";
+import { AudioBar } from "@/components/reader/AudioBar";
+import type { AudioChapterMeta, VerseTiming } from "@/lib/bible/audioTypes";
 
 interface SessionDetail {
   id: string;
@@ -101,6 +103,12 @@ function ReaderInner() {
   const [status, setStatus] = useState<string>("not_started");
   const [readSet, setReadSet] = useState<Set<string>>(new Set());
   const [latestSessionId, setLatestSessionId] = useState<string | null>(null);
+  const [audioInfo, setAudioInfo] = useState<{
+    key: string;
+    meta: AudioChapterMeta | null;
+    time: number;
+    ended: boolean;
+  } | null>(null);
 
   const planSession = sessionId ?? latestSessionId;
   const loadingChapter =
@@ -129,12 +137,6 @@ function ReaderInner() {
     window.dispatchEvent(new Event("storage"));
   }, []);
 
-  const toggleVerses = useCallback(() => {
-    const next = localStorage.getItem("reader-show-verses") === "0";
-    localStorage.setItem("reader-show-verses", next ? "1" : "0");
-    window.dispatchEvent(new Event("storage"));
-  }, []);
-
   const markRead = useCallback(
     (bookId: string, ch: number) => {
       setReadSet((prev) => {
@@ -157,6 +159,53 @@ function ReaderInner() {
     },
     [planSession]
   );
+
+  const handleAudioMeta = useCallback(
+    (meta: AudioChapterMeta | null) => {
+      if (!current) return;
+      setAudioInfo({
+        key: `${current.bookId}:${current.chapter}`,
+        meta,
+        time: 0,
+        ended: false,
+      });
+    },
+    [current]
+  );
+
+  const handleAudioTime = useCallback((time: number) => {
+    setAudioInfo((prev) => (prev ? { ...prev, time } : prev));
+  }, []);
+
+  const handleAudioEnded = useCallback(() => {
+    if (!current) return;
+    const key = `${current.bookId}:${current.chapter}`;
+    markRead(current.bookId, current.chapter);
+    setAudioInfo((prev) =>
+      prev && prev.key === key ? { ...prev, ended: true } : prev
+    );
+  }, [current, markRead]);
+
+  const chapterKey = current ? `${current.bookId}:${current.chapter}` : "";
+  const liveAudio =
+    audioInfo && audioInfo.key === chapterKey ? audioInfo : null;
+  const activeVerse = useMemo(() => {
+    const timings = liveAudio?.meta?.verseTimings;
+    if (!timings || timings.length === 0) return null;
+    const t0 = liveAudio?.time ?? 0;
+    let hit: VerseTiming | null = null;
+    for (const t of timings) {
+      if (t0 < t.start) break;
+      if (t.end === undefined || t0 < t.end) hit = t;
+    }
+    return hit?.verse ?? null;
+  }, [liveAudio]);
+
+  const toggleVerses = useCallback(() => {
+    const next = localStorage.getItem("reader-show-verses") === "0";
+    localStorage.setItem("reader-show-verses", next ? "1" : "0");
+    window.dispatchEvent(new Event("storage"));
+  }, []);
 
   const loadSession = useCallback(async (id: string) => {
     setLoadingSession(true);
@@ -469,6 +518,24 @@ function ReaderInner() {
         </div>
       </div>
 
+      {current && (
+        <AudioBar
+          key={`${current.bookId}:${current.chapter}:${translation}`}
+          bookId={current.bookId}
+          chapter={current.chapter}
+          translationId={translation}
+          onMeta={handleAudioMeta}
+          onTimeUpdate={handleAudioTime}
+          onEnded={handleAudioEnded}
+        />
+      )}
+
+      {liveAudio?.ended && (
+        <p className="mt-2 text-xs text-success" role="status">
+          Marked read when audio finished.
+        </p>
+      )}
+
       <article
         className="mt-6 card p-6 md:p-10"
         style={{ fontSize: `${fontSize}px`, lineHeight: 1.75 }}
@@ -493,7 +560,14 @@ function ReaderInner() {
             </p>
             <div className="space-y-4">
               {chapter.verses.map((v) => (
-                <p key={v.number} className="text-ink">
+                <p
+                  key={v.number}
+                  className={
+                    activeVerse === v.number
+                      ? "text-ink rounded-md bg-accent-soft px-1 -mx-1"
+                      : "text-ink"
+                  }
+                >
                   {showVerses && (
                     <sup className="text-accent font-sans text-[0.7em] mr-1 tabular-nums">
                       {v.number}
