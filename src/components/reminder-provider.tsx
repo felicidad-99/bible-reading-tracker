@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface DashboardPayload {
-  plan: unknown;
+  plan?: unknown;
   stats: {
     completedChapters: number;
     totalChapters: number;
@@ -82,8 +82,9 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
 
     async function tick() {
       if (cancelled) return;
+      if (typeof document !== "undefined" && document.hidden) return;
       try {
-        const res = await fetch("/api/dashboard");
+        const res = await fetch("/api/dashboard?scope=reminders");
         if (!res.ok) return;
         const data = (await res.json()) as DashboardPayload;
         if (!data.stats) return;

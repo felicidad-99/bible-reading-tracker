@@ -33,7 +33,12 @@ export async function GET(
       bookId.toUpperCase(),
       chapter
     );
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        "Cache-Control":
+          "private, max-age=300, stale-while-revalidate=86400",
+      },
+    });
   } catch (err) {
     if (err instanceof BibleReferenceError) {
       return NextResponse.json({ error: err.message }, { status: 404 });

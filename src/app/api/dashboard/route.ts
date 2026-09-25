@@ -4,9 +4,60 @@ import { calculateStreaks } from "@/lib/plan/generator";
 import { prisma } from "@/lib/prisma";
 import { TOTAL_CHAPTERS } from "@/lib/plan/bible-books";
 
-export async function GET() {
+async function remindersPayload(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { timezone: true },
+  });
+  const plan = await prisma.readingPlan.findFirst({
+    where: { userId, status: "active" },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+  if (!plan) return { stats: null };
+
+  const today = todayDateString(user?.timezone);
+  const [todayDay, next] = await Promise.all([
+    prisma.readingDay.findFirst({
+      where: { planId: plan.id, date: today },
+      include: { sessions: { orderBy: { sessionNumber: "asc" } } },
+    }),
+    prisma.readingSession.findFirst({
+      where: { status: { not: "completed" }, readingDay: { planId: plan.id } },
+      orderBy: [{ readingDay: { date: "asc" } }, { sessionNumber: "asc" }],
+      include: {
+        readingDay: { select: { date: true, dayNumber: true } },
+      },
+    }),
+  ]);
+
+  return {
+    stats: {
+      todayDay: todayDay ?? null,
+      nextReading: next
+        ? {
+            sessionId: next.id,
+            sessionNumber: next.sessionNumber,
+            scheduledTime: next.scheduledTime,
+            date: next.readingDay.date,
+            dayNumber: next.readingDay.dayNumber,
+            chapters: next.chapters,
+            chapterCount: next.chapterCount,
+            status: next.status,
+          }
+        : null,
+    },
+  };
+}
+
+export async function GET(req: Request) {
   try {
+    const scope = new URL(req.url).searchParams.get("scope");
     const userId = await requireUserId();
+
+    if (scope === "reminders") {
+      return NextResponse.json(await remindersPayload(userId));
+    }
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { timezone: true },
@@ -65,7 +116,7 @@ export async function GET() {
       })[0];
 
     return NextResponse.json({
-      plan,
+      plan: { id: plan.id, status: plan.status },
       stats: {
         completedChapters,
         totalChapters: TOTAL_CHAPTERS,

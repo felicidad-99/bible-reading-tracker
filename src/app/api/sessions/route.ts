@@ -95,11 +95,6 @@ export async function PATCH(req: Request) {
     }
 
     if (complete) {
-      await prisma.readingSession.update({
-        where: { id: sessionId },
-        data: { status: "completed", completedAt: new Date() },
-      });
-
       const chapters = session.chapters as Array<{
         bookId: string;
         start: number;
@@ -107,49 +102,54 @@ export async function PATCH(req: Request) {
       }>;
 
       const planId = session.readingDay.planId;
+      const progressRows: Array<{
+        userId: string;
+        planId: string;
+        bookId: string;
+        chapter: number;
+      }> = [];
       for (const range of chapters) {
         for (let ch = range.start; ch <= range.end; ch++) {
-          await prisma.readingProgress.upsert({
-            where: {
-              planId_bookId_chapter: { planId, bookId: range.bookId, chapter: ch },
-            },
-            create: {
-              userId,
-              planId,
-              bookId: range.bookId,
-              chapter: ch,
-            },
-            update: {},
-          });
+          progressRows.push({ userId, planId, bookId: range.bookId, chapter: ch });
         }
       }
 
-      const allSessions = await prisma.readingSession.findMany({
-        where: { readingDayId: session.readingDayId },
-      });
-      const progressCount = await prisma.readingProgress.count({
-        where: { planId },
-      });
+      await prisma.$transaction(async (tx) => {
+        await tx.readingSession.update({
+          where: { id: sessionId },
+          data: { status: "completed", completedAt: new Date() },
+        });
 
-      const allDone = allSessions.every((s) => s.status === "completed");
-      await prisma.readingDay.update({
-        where: { id: session.readingDayId },
-        data: {
-          status: allDone ? "completed" : "in_progress",
-          completedChapters: Math.min(
-            progressCount,
-            session.readingDay.totalChapters
-          ),
-        },
+        if (progressRows.length > 0) {
+          await tx.readingProgress.createMany({
+            data: progressRows,
+            skipDuplicates: true,
+          });
+        }
+
+        const [allSessions, progressCount] = await Promise.all([
+          tx.readingSession.findMany({
+            where: { readingDayId: session.readingDayId },
+            select: { status: true },
+          }),
+          tx.readingProgress.count({ where: { planId } }),
+        ]);
+
+        const allDone = allSessions.every((s) => s.status === "completed");
+        await tx.readingDay.update({
+          where: { id: session.readingDayId },
+          data: {
+            status: allDone ? "completed" : "in_progress",
+            completedChapters: Math.min(
+              progressCount,
+              session.readingDay.totalChapters
+            ),
+          },
+        });
       });
     }
 
-    const fresh = await prisma.readingSession.findUnique({
-      where: { id: sessionId },
-      include: { reads: true },
-    });
-
-    return NextResponse.json({ ok: true, session: fresh });
+    return NextResponse.json({ ok: true });
   } catch (err) {
     if (err instanceof Response) return err;
     const message = err instanceof Error ? err.message : "Update failed";

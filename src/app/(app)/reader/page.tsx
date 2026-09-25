@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   BIBLE_BOOKS,
   getBookById,
@@ -137,6 +137,35 @@ function ReaderInner() {
     window.dispatchEvent(new Event("storage"));
   }, []);
 
+  const readQueue = useRef(
+    new Map<string, { sessionId: string; bookId: string; chapter: number }>()
+  );
+  const readTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const flushReadQueue = useCallback(() => {
+    if (readTimer.current) {
+      clearTimeout(readTimer.current);
+      readTimer.current = null;
+    }
+    const queued = Array.from(readQueue.current.values());
+    readQueue.current.clear();
+    for (const item of queued) {
+      fetch("/api/sessions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: item.sessionId,
+          bookId: item.bookId,
+          chapter: item.chapter,
+          read: true,
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => flushReadQueue, [flushReadQueue]);
+
   const markRead = useCallback(
     (bookId: string, ch: number) => {
       setReadSet((prev) => {
@@ -145,19 +174,19 @@ function ReaderInner() {
         return next;
       });
       if (planSession) {
-        fetch("/api/sessions", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        const key = `${planSession}:${bookId}:${ch}`;
+        if (!readQueue.current.has(key)) {
+          readQueue.current.set(key, {
             sessionId: planSession,
             bookId,
             chapter: ch,
-            read: true,
-          }),
-        }).catch(() => {});
+          });
+        }
+        if (readTimer.current) clearTimeout(readTimer.current);
+        readTimer.current = setTimeout(flushReadQueue, 600);
       }
     },
-    [planSession]
+    [planSession, flushReadQueue]
   );
 
   const handleAudioMeta = useCallback(
@@ -210,59 +239,30 @@ function ReaderInner() {
   const loadSession = useCallback(async (id: string) => {
     setLoadingSession(true);
     try {
-      const res = await fetch("/api/calendar");
+      const res = await fetch(`/api/sessions/${id}`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load plan");
+      if (!res.ok) throw new Error(data.error || "Failed to load session");
 
-      let found: (SessionDetail & {
-        readingDay: { date: string; dayNumber: number; planId: string };
-      }) | null = null;
-      for (const day of data.days as Array<{
-        id: string;
-        date: string;
-        dayNumber: number;
-        sessions: SessionDetail[];
-      }>) {
-        const hit = day.sessions.find((s) => s.id === id);
-        if (hit) {
-          found = {
-            ...hit,
-            readingDay: {
-              date: day.date,
-              dayNumber: day.dayNumber,
-              planId: data.planId ?? "",
-            },
-          };
-          break;
-        }
-      }
-
-      if (!found) {
-        setError("Session not found");
-        return;
-      }
-
+      const found = data.session as SessionDetail;
       setSession(found);
       setStatus(found.status);
       setTranslation(
-        (data.translation as string) ||
+        data.translation ||
           localStorage.getItem("reader-translation") ||
           "BSB"
       );
 
-      const reads = new Set<string>();
+      const reads = new Set<string>(
+        ((data.reads ?? []) as Array<{ bookId: string; chapter: number }>).map(
+          (r) => `${r.bookId}:${r.chapter}`
+        )
+      );
       setReadSet(reads);
 
       const flat = flattenAssigned(found);
       if (flat.length > 0) {
         const unread = flat.find((c) => !reads.has(`${c.bookId}:${c.chapter}`));
         setCurrent(unread ?? flat[0]);
-      }
-
-      const planRes = await fetch("/api/plans");
-      const planData = await planRes.json();
-      if (planData?.plan?.translation) {
-        setTranslation(planData.plan.translation);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load session");
@@ -274,7 +274,7 @@ function ReaderInner() {
   const loadLatestSession = useCallback(async () => {
     setLoadingSession(true);
     try {
-      const res = await fetch("/api/dashboard");
+      const res = await fetch("/api/dashboard?scope=reminders");
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to load");
       const next = data.stats?.nextReading;
@@ -341,6 +341,7 @@ function ReaderInner() {
   async function completeSession() {
     if (!session || !planSession) return;
     setError(null);
+    flushReadQueue();
     try {
       const res = await fetch("/api/sessions", {
         method: "PATCH",
