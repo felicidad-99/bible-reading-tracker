@@ -116,7 +116,7 @@ export default function StatsPage() {
       <div className="grid gap-6 md:grid-cols-3">
         {items.map((section) => (
           <section key={section.group} className="card p-5">
-            <h2 className="text-sm font-semibold text-ink-subtle tracking-wide uppercase text-[11px]">
+            <h2 className="text-sm font-semibold text-ink-subtle tracking-wide uppercase">
               {section.group}
             </h2>
             <dl className="mt-4 space-y-3">

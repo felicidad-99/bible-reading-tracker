@@ -147,7 +147,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" | "forgot" | "res
             onChange={(e) => setToken(e.target.value)}
             placeholder="Paste token from email"
           />
-          <p className="text-xs text-ink-subtle mt-1">
+          <p className="text-sm text-ink-subtle mt-1">
             Or open the link from your email directly.
           </p>
         </div>

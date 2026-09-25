@@ -313,7 +313,7 @@ function StatCard({
 }) {
   return (
     <div className="card p-5">
-      <p className="text-xs font-medium text-ink-subtle">{label}</p>
+      <p className="text-sm font-medium text-ink-subtle">{label}</p>
       <p className="mt-2 text-xl font-semibold tracking-tight tabular-nums">
         {value}
       </p>
@@ -358,7 +358,7 @@ function SessionCard({
       <div className="min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold">{label}</span>
-          <span className="text-xs text-ink-subtle tabular-nums">
+          <span className="text-sm text-ink-subtle tabular-nums">
             {session.scheduledTime}
           </span>
           <span className={`status-pill status-${done ? "completed" : session.status === "missed" ? "missed" : session.status === "in_progress" ? "in-progress" : "not-started"}`}>

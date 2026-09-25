@@ -368,7 +368,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <p className="text-xs text-ink-subtle">
+        <p className="text-sm text-ink-subtle">
           Browser notifications are requested when you enable reminders. They work
           while the app is open; install the app for the best experience.
         </p>
@@ -402,7 +402,7 @@ export default function SettingsPage() {
             Catch up missed readings
           </button>
         </div>
-        <p className="text-xs text-ink-subtle">
+        <p className="text-sm text-ink-subtle">
           Completed reading history is never modified when you regenerate or catch up.
         </p>
       </section>

@@ -58,7 +58,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-line py-8">
-        <div className="max-w-5xl mx-auto px-4 text-xs text-ink-subtle">
+        <div className="max-w-5xl mx-auto px-4 text-sm text-ink-subtle">
           Scripture via Free Use Bible API. Public-domain translations preferred.
         </div>
       </footer>

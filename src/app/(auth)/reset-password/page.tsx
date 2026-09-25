@@ -24,7 +24,7 @@ export default async function ResetPasswordPage({
           Open the email link to auto-fill the token, or paste it below.
         </p>
         {token && (
-          <p className="text-xs font-mono break-all text-center text-ink-subtle mb-4">
+          <p className="text-sm font-mono break-all text-center text-ink-subtle mb-4">
             {token}
           </p>
         )}

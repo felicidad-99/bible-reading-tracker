@@ -183,10 +183,10 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold">{toast.title}</p>
-              <p className="text-xs text-ink-muted mt-1">{toast.body}</p>
+              <p className="text-sm text-ink-muted mt-1">{toast.body}</p>
               <button
                 type="button"
-                className="btn btn-primary text-xs mt-3 px-4 py-2"
+                className="btn btn-primary text-sm mt-3 px-4 py-2"
                 onClick={() => {
                   setToast(null);
                   router.push("/dashboard");
@@ -197,7 +197,7 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
             </div>
             <button
               type="button"
-              className="btn btn-ghost text-xs px-2 py-1"
+              className="btn btn-ghost text-sm px-2 py-1"
               onClick={() => setToast(null)}
               aria-label="Dismiss reminder"
             >

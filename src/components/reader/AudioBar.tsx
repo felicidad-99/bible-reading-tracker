@@ -158,21 +158,21 @@ export function AudioBar({
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
-          className="btn btn-primary text-xs px-4 py-2"
+          className="btn btn-primary text-sm px-4 py-2"
           onClick={toggle}
           aria-label={playing ? "Pause audio" : "Play audio"}
         >
           {playing ? "Pause" : "Play"}
         </button>
 
-        <span className="text-xs text-ink-muted tabular-nums min-w-16">
+        <span className="text-sm text-ink-muted tabular-nums min-w-16">
           {formatTime(current)} / {formatTime(duration)}
         </span>
 
-        <label className="flex items-center gap-2 text-xs text-ink-muted">
+        <label className="flex items-center gap-2 text-sm text-ink-muted">
           <span className="sr-only">Playback speed</span>
           <select
-            className="input !w-auto !py-1 text-xs"
+            className="input !w-auto !py-1 text-sm"
             value={String(speed)}
             onChange={(e) => setSpeed(Number(e.target.value))}
             aria-label="Playback speed"
@@ -185,7 +185,7 @@ export function AudioBar({
           </select>
         </label>
 
-        <span className="text-xs text-ink-subtle ml-auto">{label}</span>
+        <span className="text-sm text-ink-subtle ml-auto">{label}</span>
       </div>
 
       <label className="block mt-3">
@@ -203,7 +203,7 @@ export function AudioBar({
       </label>
 
       {meta.copyright && (
-        <p className="mt-2 text-[11px] text-ink-subtle">{meta.copyright}</p>
+        <p className="mt-2 text-sm text-ink-subtle">{meta.copyright}</p>
       )}
     </section>
   );

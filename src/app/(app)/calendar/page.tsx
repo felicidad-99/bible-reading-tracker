@@ -129,13 +129,13 @@ export default function CalendarPage() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-xs text-ink-subtle tabular-nums">
+                      <p className="text-sm text-ink-subtle tabular-nums">
                         {formatShortDate(day.date)}
                       </p>
                       <p className="font-medium text-sm mt-0.5">
                         Day {day.dayNumber}
                         {day.isToday && (
-                          <span className="ml-2 text-accent text-xs font-semibold">
+                          <span className="ml-2 text-accent text-sm font-semibold">
                             Today
                           </span>
                         )}
@@ -145,7 +145,7 @@ export default function CalendarPage() {
                       {STATUS_LABEL[day.status] ?? day.status}
                     </span>
                   </div>
-                  <p className="mt-2 text-xs text-ink-muted tabular-nums">
+                  <p className="mt-2 text-sm text-ink-muted tabular-nums">
                     {day.totalChapters} chapters ·{" "}
                     {day.sessions.length} session
                     {day.sessions.length === 1 ? "" : "s"}
@@ -175,7 +175,7 @@ export default function CalendarPage() {
             <div className="card p-5 lg:sticky lg:top-6">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs text-ink-subtle tabular-nums">
+                  <p className="text-sm text-ink-subtle tabular-nums">
                     {formatLongDate(selected.date)}
                   </p>
                   <h2 className="mt-1 font-semibold">Day {selected.dayNumber}</h2>
@@ -207,13 +207,13 @@ export default function CalendarPage() {
                     <p className="mt-1 text-sm text-ink-muted">
                       {s.chapters.map(formatChapterRange).join(", ")}
                     </p>
-                    <p className="text-xs text-ink-subtle tabular-nums mt-0.5">
+                    <p className="text-sm text-ink-subtle tabular-nums mt-0.5">
                       Scheduled {s.scheduledTime} · {s.chapterCount} chapters
                     </p>
                     {s.status !== "completed" && (
                       <Link
                         href={`/reader?session=${s.id}`}
-                        className="btn btn-secondary text-xs mt-2"
+                        className="btn btn-secondary text-sm mt-2"
                       >
                         Open reading
                       </Link>

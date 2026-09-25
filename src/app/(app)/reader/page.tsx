@@ -461,7 +461,7 @@ function ReaderInner() {
             )}
           </p>
           {chapter?.copyright && (
-            <p className="mt-1 text-xs text-ink-subtle">{chapter.copyright}</p>
+            <p className="mt-1 text-sm text-ink-subtle">{chapter.copyright}</p>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -494,7 +494,7 @@ function ReaderInner() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="btn btn-ghost text-xs px-3 py-1.5"
+            className="btn btn-ghost text-sm px-3 py-1.5"
             onClick={() => setFontSize(Math.max(14, fontSize - 2))}
             aria-label="Decrease font size"
           >
@@ -502,7 +502,7 @@ function ReaderInner() {
           </button>
           <button
             type="button"
-            className="btn btn-ghost text-xs px-3 py-1.5"
+            className="btn btn-ghost text-sm px-3 py-1.5"
             onClick={() => setFontSize(Math.min(28, fontSize + 2))}
             aria-label="Increase font size"
           >
@@ -510,7 +510,7 @@ function ReaderInner() {
           </button>
           <button
             type="button"
-            className="btn btn-ghost text-xs px-3 py-1.5"
+            className="btn btn-ghost text-sm px-3 py-1.5"
             onClick={toggleVerses}
             aria-pressed={showVerses}
           >
@@ -532,7 +532,7 @@ function ReaderInner() {
       )}
 
       {liveAudio?.ended && (
-        <p className="mt-2 text-xs text-success" role="status">
+        <p className="mt-2 text-sm text-success" role="status">
           Marked read when audio finished.
         </p>
       )}
@@ -584,7 +584,7 @@ function ReaderInner() {
               )}
             </div>
             {chapter.copyright && (
-              <p className="mt-8 pt-4 border-t border-line text-xs font-sans text-ink-subtle">
+              <p className="mt-8 pt-4 border-t border-line text-sm font-sans text-ink-subtle">
                 {chapter.copyright}
               </p>
             )}

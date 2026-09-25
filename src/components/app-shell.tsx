@@ -42,7 +42,7 @@ export function AppShell({
           <Link href="/dashboard" className="font-semibold tracking-tight text-[15px]">
             Bible Tracker
           </Link>
-          <p className="text-xs text-ink-subtle mt-0.5">Read. Track. Finish.</p>
+          <p className="text-sm text-ink-subtle mt-0.5">Read. Track. Finish.</p>
         </div>
         <nav className="flex-1 p-3 space-y-1" aria-label="Main">
           {NAV.map((item) => (
@@ -96,7 +96,7 @@ export function AppShell({
             </Link>
             <button
               type="button"
-              className="btn btn-ghost text-xs px-3 py-1.5"
+              className="btn btn-ghost text-sm px-3 py-1.5"
               onClick={() =>
                 setTheme(resolved === "dark" ? "light" : "dark")
               }
@@ -121,7 +121,7 @@ export function AppShell({
             <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
-                className={`flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors ${
+                className={`flex flex-col items-center gap-0.5 py-2.5 text-sm font-medium transition-colors ${
                   isActive(item.href)
                     ? "text-accent"
                     : "text-ink-subtle hover:text-ink"
