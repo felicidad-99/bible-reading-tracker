@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatChapterRange, type ChapterRange } from "@/lib/plan/generator";
 
 interface CalSession {
@@ -43,6 +43,17 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<CalDay | null>(null);
+  const detailRef = useRef<HTMLElement | null>(null);
+
+  const selectDay = (day: CalDay) => {
+    setSelected(day);
+    if (
+      typeof window !== "undefined" &&
+      !window.matchMedia("(min-width: 1024px)").matches
+    ) {
+      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -124,7 +135,7 @@ export default function CalendarPage() {
                       ? "border-accent ring-1 ring-accent"
                       : "hover:border-ink-subtle"
                   } ${day.isToday ? "shadow-sm" : ""}`}
-                  onClick={() => setSelected(day)}
+                  onClick={() => selectDay(day)}
                   aria-pressed={selected?.id === day.id}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -170,7 +181,7 @@ export default function CalendarPage() {
           </ul>
         </div>
 
-        <aside className="lg:col-span-2">
+        <aside className="order-first lg:order-none lg:col-span-2 scroll-mt-20" ref={detailRef}>
           {selected ? (
             <div className="card p-5 lg:sticky lg:top-6">
               <div className="flex items-start justify-between gap-3">

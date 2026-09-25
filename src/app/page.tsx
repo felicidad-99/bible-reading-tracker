@@ -9,8 +9,8 @@ export default function LandingPage() {
   return (
     <div className="min-h-dvh flex flex-col">
       <header className="border-b border-line">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <span className="font-semibold tracking-tight">Bible Tracker</span>
+        <div className="max-w-5xl mx-auto px-4 min-h-16 py-2 flex flex-wrap items-center justify-between gap-2">
+          <span className="font-semibold tracking-tight text-lg">Bible Tracker</span>
           <nav className="flex items-center gap-2" aria-label="Account">
             <Link href="/signin" className="btn btn-ghost text-sm">
               Sign in

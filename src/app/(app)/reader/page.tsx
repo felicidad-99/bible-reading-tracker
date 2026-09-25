@@ -593,48 +593,60 @@ function ReaderInner() {
       </article>
 
       <nav
-        className="mt-6 flex items-center justify-between gap-3"
+        className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
         aria-label="Chapter navigation"
       >
-        <button
-          type="button"
-          className="btn btn-secondary"
-          disabled={!canPrev || !current}
-          onClick={() => {
-            if (!current) return;
-            const p = prevChapterRef(current.bookId, current.chapter);
-            if (p) setCurrent(p);
-          }}
-        >
-          Previous
-        </button>
+        <div className="flex gap-3 md:contents">
+          <button
+            type="button"
+            className="btn btn-secondary flex-1 md:flex-none md:order-1"
+            disabled={!canPrev || !current}
+            onClick={() => {
+              if (!current) return;
+              const p = prevChapterRef(current.bookId, current.chapter);
+              if (p) setCurrent(p);
+            }}
+          >
+            Previous
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-secondary flex-1 md:flex-none md:order-3"
+            disabled={!canNext || !current}
+            onClick={() => {
+              if (!current) return;
+              const n = nextChapterRef(current.bookId, current.chapter);
+              if (n) setCurrent(n);
+            }}
+          >
+            Next
+          </button>
+        </div>
 
         {status === "not_started" && (
-          <button type="button" className="btn btn-primary" onClick={startSession}>
+          <button
+            type="button"
+            className="btn btn-primary md:order-2"
+            onClick={startSession}
+          >
             Mark as started
           </button>
         )}
         {status !== "completed" && (
-          <button type="button" className="btn btn-primary" onClick={completeSession}>
+          <button
+            type="button"
+            className="btn btn-primary md:order-2"
+            onClick={completeSession}
+          >
             Mark as Completed
           </button>
         )}
         {status === "completed" && (
-          <span className="status-pill status-completed">Session complete</span>
+          <span className="status-pill status-completed md:order-2">
+            Session complete
+          </span>
         )}
-
-        <button
-          type="button"
-          className="btn btn-secondary"
-          disabled={!canNext || !current}
-          onClick={() => {
-            if (!current) return;
-            const n = nextChapterRef(current.bookId, current.chapter);
-            if (n) setCurrent(n);
-          }}
-        >
-          Next
-        </button>
       </nav>
 
       {error && chapter && (

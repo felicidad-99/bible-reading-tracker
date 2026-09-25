@@ -39,7 +39,7 @@ export function AppShell({
 
       <aside className="hidden md:flex md:w-56 md:flex-col md:border-r md:border-line md:bg-surface-raised md:sticky md:top-0 md:h-dvh">
         <div className="p-5 border-b border-line">
-          <Link href="/dashboard" className="font-semibold tracking-tight text-[15px]">
+          <Link href="/dashboard" className="font-semibold tracking-tight text-lg xl:text-xl">
             Bible Tracker
           </Link>
           <p className="text-sm text-ink-subtle mt-0.5">Read. Track. Finish.</p>
@@ -91,7 +91,7 @@ export function AppShell({
       <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-0">
         <header className="md:hidden sticky top-0 z-40 bg-surface-raised/90 backdrop-blur border-b border-line">
           <div className="flex items-center justify-between px-4 h-14">
-            <Link href="/dashboard" className="font-semibold text-sm">
+            <Link href="/dashboard" className="font-semibold text-lg">
               Bible Tracker
             </Link>
             <button
