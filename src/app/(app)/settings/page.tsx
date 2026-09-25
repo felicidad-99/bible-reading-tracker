@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PushToggle } from "@/components/push-toggle";
 
 interface SettingsData {
   user: {
@@ -372,6 +373,11 @@ export default function SettingsPage() {
           Browser notifications are requested when you enable reminders. They work
           while the app is open; install the app for the best experience.
         </p>
+      </section>
+
+      <section className="card p-5 space-y-4">
+        <h2 className="font-semibold">Push notifications</h2>
+        <PushToggle />
       </section>
 
       <section className="card p-5 space-y-3">

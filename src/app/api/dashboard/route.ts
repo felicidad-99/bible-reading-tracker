@@ -5,16 +5,40 @@ import { prisma } from "@/lib/prisma";
 import { TOTAL_CHAPTERS } from "@/lib/plan/bible-books";
 
 async function remindersPayload(userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { timezone: true },
-  });
+  const yesterday = new Date(Date.now() - 86400000)
+    .toISOString()
+    .slice(0, 10);
+
+  const [user, nudges] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { timezone: true },
+    }),
+    prisma.nudge.findMany({
+      where: { toUserId: userId, seenAt: null, date: { gte: yesterday } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: {
+        fromUser: { select: { name: true, email: true } },
+        group: { select: { name: true } },
+      },
+    }),
+  ]);
+
+  const pendingNudges = nudges.map((n) => ({
+    id: n.id,
+    groupId: n.groupId,
+    groupName: n.group.name,
+    fromName: n.fromUser.name ?? n.fromUser.email.split("@")[0],
+    date: n.date,
+  }));
+
   const plan = await prisma.readingPlan.findFirst({
     where: { userId, status: "active" },
     orderBy: { createdAt: "desc" },
     select: { id: true },
   });
-  if (!plan) return { stats: null };
+  if (!plan) return { stats: null, pendingNudges };
 
   const today = todayDateString(user?.timezone);
   const [todayDay, next] = await Promise.all([
@@ -32,6 +56,7 @@ async function remindersPayload(userId: string) {
   ]);
 
   return {
+    pendingNudges,
     stats: {
       todayDay: todayDay ?? null,
       nextReading: next

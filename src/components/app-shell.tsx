@@ -6,12 +6,17 @@ import { useSyncExternalStore } from "react";
 import { useTheme } from "@/components/theme-provider";
 
 const NAV = [
-  { href: "/dashboard", label: "Dashboard", short: "Home" },
-  { href: "/calendar", label: "Calendar", short: "Calendar" },
-  { href: "/reader", label: "Read", short: "Read" },
-  { href: "/stats", label: "Stats", short: "Stats" },
-  { href: "/settings", label: "Settings", short: "Settings" },
+  { href: "/dashboard", label: "Dashboard", short: "Home", icon: "⌂" },
+  { href: "/calendar", label: "Calendar", short: "Calendar", icon: "▦" },
+  { href: "/reader", label: "Read", short: "Read", icon: "▤" },
+  { href: "/stats", label: "Stats", short: "Stats", icon: "◫" },
+  { href: "/groups", label: "Groups", short: "Groups", icon: "◈" },
+  { href: "/settings", label: "Settings", short: "Settings", icon: "⚙" },
 ];
+
+const MOBILE_NAV = NAV.filter((item) =>
+  ["/dashboard", "/calendar", "/reader", "/settings"].includes(item.href)
+);
 
 const emptySubscribe = () => () => {};
 
@@ -117,7 +122,7 @@ export function AppShell({
         aria-label="Primary"
       >
         <ul className="flex justify-around">
-          {NAV.map((item) => (
+          {MOBILE_NAV.map((item) => (
             <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
@@ -129,7 +134,7 @@ export function AppShell({
                 aria-current={isActive(item.href) ? "page" : undefined}
               >
                 <span aria-hidden className="text-base leading-none">
-                  {item.short === "Home" ? "⌂" : item.short === "Calendar" ? "▦" : item.short === "Read" ? "▤" : item.short === "Stats" ? "◫" : "⚙"}
+                  {item.icon}
                 </span>
                 {item.short}
               </Link>

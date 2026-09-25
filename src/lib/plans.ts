@@ -72,7 +72,11 @@ export async function getActivePlan(
   return { ...plan, notificationPrefs };
 }
 
-export async function persistPlan(userId: string, input: CreatePlanInput) {
+export async function persistPlan(
+  userId: string,
+  input: CreatePlanInput,
+  groupId?: string
+) {
   const generated = generateReadingPlan({
     startDate: input.startDate,
     durationDays: input.durationDays,
@@ -99,6 +103,7 @@ export async function persistPlan(userId: string, input: CreatePlanInput) {
       translation: input.translation,
       sessionTimes: input.sessionTimes,
       status: "active",
+      ...(groupId ? { groupId } : {}),
       days: {
         create: generated.days.map((day) => ({
           date: day.date,

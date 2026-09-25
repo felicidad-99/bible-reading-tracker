@@ -6,6 +6,7 @@ import {
   formatChapterRange,
   type ChapterRange,
 } from "@/lib/plan/generator";
+import { GroupsSection } from "@/components/groups-section";
 
 interface SessionInfo {
   id: string;
@@ -296,6 +297,8 @@ export default function DashboardPage() {
           Pause plan
         </button>
       </section>
+
+      <GroupsSection />
     </div>
   );
 }

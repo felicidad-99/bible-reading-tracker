@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 
 interface DashboardPayload {
   plan?: unknown;
+  pendingNudges?: Array<{
+    id: string;
+    groupId: string;
+    groupName: string;
+    fromName: string;
+    date: string;
+  }>;
   stats: {
     completedChapters: number;
     totalChapters: number;
@@ -47,7 +54,12 @@ interface DashboardPayload {
 
 export function ReminderProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [toast, setToast] = useState<{ title: string; body: string } | null>(null);
+  const [toast, setToast] = useState<{
+    title: string;
+    body: string;
+    href: string;
+    action: string;
+  } | null>(null);
   const notified = useRef(new Set<string>());
   const [prefs, setPrefs] = useState<{
     enabled: boolean;
@@ -56,16 +68,19 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
     missedAfterMinutes: number;
   } | null>(null);
 
-  const showToast = useCallback((title: string, body: string) => {
-    setToast({ title, body });
-    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-      try {
-        new Notification(title, { body, tag: "bible-reminder" });
-      } catch {
-        // notification blocked at OS level
+  const showToast = useCallback(
+    (title: string, body: string, href = "/dashboard", action = "Continue Reading") => {
+      setToast({ title, body, href, action });
+      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+        try {
+          new Notification(title, { body, tag: "bible-reminder" });
+        } catch {
+          // notification blocked at OS level
+        }
       }
-    }
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
     fetch("/api/settings")
@@ -87,6 +102,24 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch("/api/dashboard?scope=reminders");
         if (!res.ok) return;
         const data = (await res.json()) as DashboardPayload;
+
+        for (const n of data.pendingNudges ?? []) {
+          const nudgeKey = `nudge:${n.id}`;
+          if (notified.current.has(nudgeKey)) continue;
+          notified.current.add(nudgeKey);
+          showToast(
+            "Group nudge",
+            `${n.fromName} nudged you to read in ${n.groupName}.`,
+            `/groups/${n.groupId}`,
+            "Open group"
+          );
+          fetch(`/api/nudges/${n.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ seenAt: true }),
+          }).catch(() => undefined);
+        }
+
         if (!data.stats) return;
 
         const stats = data.stats;
@@ -189,10 +222,10 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
                 className="btn btn-primary text-sm mt-3 px-4 py-2"
                 onClick={() => {
                   setToast(null);
-                  router.push("/dashboard");
+                  router.push(toast.href);
                 }}
               >
-                Continue Reading
+                {toast.action}
               </button>
             </div>
             <button
