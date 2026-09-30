@@ -69,7 +69,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     theme === "dark" || (theme === "system" && prefersDark) ? "dark" : "light";
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", resolved === "dark");
+    const root = document.documentElement;
+    const suppress = document.createElement("style");
+    suppress.textContent =
+      "*,*::before,*::after{transition:none !important}";
+    document.head.appendChild(suppress);
+    void root.offsetHeight;
+    root.classList.toggle("dark", resolved === "dark");
+    const frame = requestAnimationFrame(() => suppress.remove());
+    return () => {
+      cancelAnimationFrame(frame);
+      suppress.remove();
+    };
   }, [resolved]);
 
   const setTheme = useCallback((t: Theme) => {

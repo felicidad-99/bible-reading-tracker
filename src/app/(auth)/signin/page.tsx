@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Sign in" };
 
 export default function SignInPage() {
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-12">
+    <main className="min-h-dvh flex flex-col items-center justify-center px-4 py-12">
       <Link href="/" className="text-sm text-ink-muted mb-8 hover:text-ink">
         ← Bible Tracker
       </Link>
@@ -30,6 +30,6 @@ export default function SignInPage() {
           </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -145,14 +145,14 @@ export function PushToggle() {
   }
   if (status === "unsupported") {
     return (
-      <p className="text-sm text-ink-subtle">
+      <p className="text-sm text-ink-muted">
         This browser doesn&apos;t support web push notifications.
       </p>
     );
   }
   if (status === "unconfigured") {
     return (
-      <p className="text-sm text-ink-subtle">
+      <p className="text-sm text-ink-muted">
         Push notifications are not configured on this server yet.
       </p>
     );
@@ -182,7 +182,7 @@ export function PushToggle() {
             ? "Push notifications on"
             : "Enable push notifications"}
       </label>
-      <p className="text-sm text-ink-subtle">
+      <p className="text-sm text-ink-muted">
         Get nudges from group members when you miss a reading — even when the
         app is closed. iPhone/iPad: add the app to your Home Screen first; push
         requires the installed version.

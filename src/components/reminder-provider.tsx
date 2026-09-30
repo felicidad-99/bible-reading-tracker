@@ -69,7 +69,7 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
   } | null>(null);
 
   const showToast = useCallback(
-    (title: string, body: string, href = "/dashboard", action = "Continue Reading") => {
+    (title: string, body: string, href = "/dashboard", action = "Continue reading") => {
       setToast({ title, body, href, action });
       if (typeof Notification !== "undefined" && Notification.permission === "granted") {
         try {
@@ -207,10 +207,11 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}
+      <div role="status" aria-live="polite" className="sr-only">
+        {toast ? `${toast.title}. ${toast.body}` : ""}
+      </div>
       {toast && (
         <div
-          role="status"
-          aria-live="polite"
           className="fixed z-50 bottom-24 md:bottom-6 right-4 left-4 md:left-auto md:w-80 card p-4 shadow-lg fade-up"
         >
           <div className="flex items-start justify-between gap-3">

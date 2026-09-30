@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface Translation {
@@ -48,6 +48,16 @@ export default function OnboardingPage() {
   const [translation, setTranslation] = useState("BSB");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const stepChanged = useRef(false);
+
+  useEffect(() => {
+    if (!stepChanged.current) {
+      stepChanged.current = true;
+      return;
+    }
+    headingRef.current?.focus();
+  }, [step]);
 
   useEffect(() => {
     fetch("/api/bible/translations")
@@ -137,7 +147,11 @@ export default function OnboardingPage() {
         />
       </div>
 
-      <h1 className="mt-8 text-2xl md:text-3xl font-semibold tracking-tight">
+      <h1
+        ref={headingRef}
+        tabIndex={-1}
+        className="mt-8 text-2xl md:text-3xl font-semibold tracking-tight"
+      >
         {STEPS[step]}
       </h1>
 

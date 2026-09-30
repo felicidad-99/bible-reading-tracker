@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Forgot password" };
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center px-4 py-12">
+    <main className="min-h-dvh flex flex-col items-center justify-center px-4 py-12">
       <Link href="/signin" className="text-sm text-ink-muted mb-8 hover:text-ink">
         ← Back to sign in
       </Link>
@@ -19,6 +19,6 @@ export default function ForgotPasswordPage() {
         </p>
         <AuthForm mode="forgot" />
       </div>
-    </div>
+    </main>
   );
 }

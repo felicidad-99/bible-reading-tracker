@@ -147,7 +147,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" | "forgot" | "res
             onChange={(e) => setToken(e.target.value)}
             placeholder="Paste token from email"
           />
-          <p className="text-sm text-ink-subtle mt-1">
+          <p className="text-sm text-ink-muted mt-1">
             Or open the link from your email directly.
           </p>
         </div>
@@ -156,7 +156,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" | "forgot" | "res
       {(mode === "signin" || mode === "signup" || mode === "reset") && (
         <div>
           <label className="label" htmlFor="password">
-            Password {mode !== "reset" && <span className="text-ink-subtle">(min 8 chars)</span>}
+            Password {mode !== "reset" && <span className="text-ink-muted">(min 8 chars)</span>}
           </label>
           <input
             id="password"

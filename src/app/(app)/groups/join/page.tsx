@@ -169,7 +169,7 @@ function JoinContent() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-3 text-sm">
-      <span className="text-ink-subtle">{label}</span>
+      <span className="text-ink-muted">{label}</span>
       <span className="font-medium text-right tabular-nums">{value}</span>
     </div>
   );

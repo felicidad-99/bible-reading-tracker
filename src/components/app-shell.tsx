@@ -37,7 +37,7 @@ export function AppShell({
     <div className="min-h-dvh flex flex-col md:flex-row">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:bg-accent focus:text-black focus:px-4 focus:py-2 focus:rounded-full"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:bg-accent focus:text-white dark:focus:text-[#042f2e] focus:px-4 focus:py-2 focus:rounded-full"
       >
         Skip to content
       </a>
@@ -47,7 +47,7 @@ export function AppShell({
           <Link href="/dashboard" className="font-semibold tracking-tight text-lg xl:text-xl">
             Bible Tracker
           </Link>
-          <p className="text-sm text-ink-subtle mt-0.5">Read. Track. Finish.</p>
+          <p className="text-sm text-ink-muted mt-0.5">Read. Track. Finish.</p>
         </div>
         <nav className="flex-1 p-3 space-y-1" aria-label="Main">
           {NAV.map((item) => (
@@ -56,7 +56,7 @@ export function AppShell({
               href={item.href}
               className={`block rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
                 isActive(item.href)
-                  ? "bg-accent text-[#042f2e]"
+                  ? "bg-accent text-white dark:text-[#042f2e]"
                   : "text-ink-muted hover:bg-surface-sunken hover:text-ink"
               }`}
               aria-current={isActive(item.href) ? "page" : undefined}
@@ -105,9 +105,9 @@ export function AppShell({
               onClick={() =>
                 setTheme(resolved === "dark" ? "light" : "dark")
               }
-              aria-label="Toggle theme"
-            >
-              {mounted ? (resolved === "dark" ? "Light" : "Dark") : "Theme"}
+                aria-label={`Switch to ${resolved === "dark" ? "light" : "dark"} mode`}
+              >
+                {mounted ? (resolved === "dark" ? "Light" : "Dark") : "Theme"}
             </button>
           </div>
         </header>
@@ -123,13 +123,13 @@ export function AppShell({
       >
         <ul className="flex justify-around">
           {MOBILE_NAV.map((item) => (
-            <li key={item.href} className="flex-1">
+            <li key={item.href} className="flex-1 px-1.5">
               <Link
                 href={item.href}
-                className={`flex flex-col items-center gap-0.5 py-2.5 text-sm font-medium transition-colors ${
+                className={`flex flex-col items-center gap-0.5 py-2.5 rounded-full text-sm font-medium transition-colors ${
                   isActive(item.href)
-                    ? "text-accent"
-                    : "text-ink-subtle hover:text-ink"
+                    ? "bg-accent text-white dark:text-[#042f2e]"
+                    : "text-ink-muted hover:text-ink"
                 }`}
                 aria-current={isActive(item.href) ? "page" : undefined}
               >

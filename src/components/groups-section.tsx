@@ -50,7 +50,10 @@ export function GroupsSection({ hideHeading = false }: { hideHeading?: boolean }
   async function joinByCode(e: React.FormEvent) {
     e.preventDefault();
     const code = inviteCode.trim();
-    if (!code) return;
+    if (!code) {
+      setError("Paste an invite code from a group member.");
+      return;
+    }
     setJoining(true);
     setError(null);
     try {
@@ -164,7 +167,7 @@ export function GroupsSection({ hideHeading = false }: { hideHeading?: boolean }
         <button
           type="submit"
           className="btn btn-secondary"
-          disabled={joining || !inviteCode.trim()}
+          disabled={joining}
         >
           {joining ? "Joining…" : "Join"}
         </button>

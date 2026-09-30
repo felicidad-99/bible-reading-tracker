@@ -35,7 +35,7 @@ export default function LandingPage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3 fade-up fade-up-delay-3">
             <Link href="/signup" className="btn btn-primary px-7 py-3.5 text-base">
-              Create Reading Plan
+              Create a reading plan
             </Link>
             <Link href="/signin" className="btn btn-secondary px-7 py-3.5 text-base">
               Sign in
@@ -58,7 +58,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-line py-8">
-        <div className="max-w-5xl mx-auto px-4 text-sm text-ink-subtle">
+        <div className="max-w-5xl mx-auto px-4 text-sm text-ink-muted">
           Scripture via Free Use Bible API. Public-domain translations preferred.
         </div>
       </footer>

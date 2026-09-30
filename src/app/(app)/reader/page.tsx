@@ -461,7 +461,7 @@ function ReaderInner() {
             )}
           </p>
           {chapter?.copyright && (
-            <p className="mt-1 text-sm text-ink-subtle">{chapter.copyright}</p>
+            <p className="mt-1 text-sm text-ink-muted">{chapter.copyright}</p>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -556,7 +556,7 @@ function ReaderInner() {
 
         {!loadingChapter && chapter && (
           <div className="font-serif">
-            <p className="text-sm font-sans text-ink-subtle mb-6 tracking-wide uppercase">
+            <p className="text-sm font-sans text-ink-muted mb-6 tracking-wide uppercase">
               {chapter.bookName} {chapter.chapter} · {chapter.translationName}
             </p>
             <div className="space-y-4">
@@ -584,7 +584,7 @@ function ReaderInner() {
               )}
             </div>
             {chapter.copyright && (
-              <p className="mt-8 pt-4 border-t border-line text-sm font-sans text-ink-subtle">
+              <p className="mt-8 pt-4 border-t border-line text-sm font-sans text-ink-muted">
                 {chapter.copyright}
               </p>
             )}

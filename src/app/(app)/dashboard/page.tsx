@@ -56,6 +56,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [catchUpMsg, setCatchUpMsg] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -122,13 +123,20 @@ export default function DashboardPage() {
 
   async function pausePlan() {
     setBusy(true);
-    await fetch("/api/plans/current", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "pause" }),
-    });
-    setBusy(false);
-    await load();
+    setActionError(null);
+    try {
+      const res = await fetch("/api/plans/current", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "pause" }),
+      });
+      if (!res.ok) throw new Error();
+      await load();
+    } catch {
+      setActionError("Unable to pause your plan. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (loading) {
@@ -150,7 +158,7 @@ export default function DashboardPage() {
           You don&apos;t have an active reading plan yet.
         </p>
         <Link href="/onboarding" className="btn btn-primary mt-6">
-          Create My Plan
+          Create my plan
         </Link>
       </div>
     );
@@ -195,7 +203,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex gap-2">
               <Link href="/calendar" className="btn btn-secondary text-sm">
-                Continue Reading
+                Continue reading
               </Link>
               <button
                 type="button"
@@ -203,7 +211,7 @@ export default function DashboardPage() {
                 onClick={runCatchUp}
                 disabled={busy}
               >
-                {busy ? "Working…" : "Catch Up"}
+                {busy ? "Working…" : "Catch up"}
               </button>
             </div>
           </div>
@@ -279,6 +287,11 @@ export default function DashboardPage() {
       </section>
 
       <section className="flex flex-wrap gap-3 fade-up fade-up-delay-3">
+        {actionError && (
+          <p role="alert" className="w-full text-sm text-danger">
+            {actionError}
+          </p>
+        )}
         <Link href="/calendar" className="btn btn-secondary">
           View calendar
         </Link>
@@ -316,7 +329,7 @@ function StatCard({
 }) {
   return (
     <div className="card p-5">
-      <p className="text-sm font-medium text-ink-subtle">{label}</p>
+      <p className="text-sm font-medium text-ink-muted">{label}</p>
       <p className="mt-2 text-xl font-semibold tracking-tight tabular-nums">
         {value}
       </p>
@@ -341,19 +354,26 @@ function SessionCard({
     SESSION_NAMES[session.sessionNumber - 1] ?? `Session ${session.sessionNumber}`;
   const reading = session.chapters.map(formatChapterRange).join(", ");
   const done = session.status === "completed";
+  const [markError, setMarkError] = useState<string | null>(null);
 
   async function markComplete() {
-    const res = await fetch("/api/sessions", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: session.id,
-        bookId: session.chapters[0]?.bookId ?? "GEN",
-        chapter: session.chapters[0]?.start ?? 1,
-        complete: true,
-      }),
-    });
-    if (res.ok) onComplete();
+    setMarkError(null);
+    try {
+      const res = await fetch("/api/sessions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: session.id,
+          bookId: session.chapters[0]?.bookId ?? "GEN",
+          chapter: session.chapters[0]?.start ?? 1,
+          complete: true,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      onComplete();
+    } catch {
+      setMarkError("Unable to mark as complete. Check your connection and try again.");
+    }
   }
 
   return (
@@ -361,7 +381,7 @@ function SessionCard({
       <div className="min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold">{label}</span>
-          <span className="text-sm text-ink-subtle tabular-nums">
+          <span className="text-sm text-ink-muted tabular-nums">
             {session.scheduledTime}
           </span>
           <span className={`status-pill status-${done ? "completed" : session.status === "missed" ? "missed" : session.status === "in_progress" ? "in-progress" : "not-started"}`}>
@@ -384,7 +404,7 @@ function SessionCard({
             href={`/reader?session=${session.id}`}
             className="btn btn-primary text-sm"
           >
-            Start Reading
+            Start reading
           </Link>
         )}
         {!done && (
@@ -402,6 +422,11 @@ function SessionCard({
           </Link>
         )}
       </div>
+      {markError && (
+        <p role="alert" className="w-full text-sm text-danger">
+          {markError}
+        </p>
+      )}
     </div>
   );
 }

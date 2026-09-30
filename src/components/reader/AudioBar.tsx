@@ -185,7 +185,7 @@ export function AudioBar({
           </select>
         </label>
 
-        <span className="text-sm text-ink-subtle ml-auto">{label}</span>
+        <span className="text-sm text-ink-muted ml-auto">{label}</span>
       </div>
 
       <label className="block mt-3">
@@ -203,7 +203,7 @@ export function AudioBar({
       </label>
 
       {meta.copyright && (
-        <p className="mt-2 text-sm text-ink-subtle">{meta.copyright}</p>
+        <p className="mt-2 text-sm text-ink-muted">{meta.copyright}</p>
       )}
     </section>
   );

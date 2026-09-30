@@ -281,7 +281,7 @@ export default function GroupDetailPage() {
               <tr>
                 <th
                   scope="col"
-                  className="sticky left-0 z-10 bg-surface-raised text-left px-3 py-2.5 font-medium text-ink-subtle border-b border-line min-w-[160px]"
+                  className="sticky left-0 z-10 bg-surface-raised text-left px-3 py-2.5 font-medium text-ink-muted border-b border-line min-w-[160px]"
                 >
                   Member
                 </th>
@@ -290,7 +290,7 @@ export default function GroupDetailPage() {
                     key={date}
                     scope="col"
                     className={`px-1.5 py-2.5 font-medium text-center border-b border-line ${
-                      date === today ? "text-accent" : "text-ink-subtle"
+                      date === today ? "text-accent" : "text-ink-muted"
                     }`}
                   >
                     <span className="block text-sm">

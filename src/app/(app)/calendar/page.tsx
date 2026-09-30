@@ -105,7 +105,7 @@ export default function CalendarPage() {
         <h1 className="text-xl font-semibold">No plan yet</h1>
         <p className="mt-2 text-ink-muted">Create a reading plan to see your calendar.</p>
         <Link href="/onboarding" className="btn btn-primary mt-5">
-          Create My Plan
+          Create my plan
         </Link>
       </div>
     );
@@ -140,7 +140,7 @@ export default function CalendarPage() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm text-ink-subtle tabular-nums">
+                      <p className="text-sm text-ink-muted tabular-nums">
                         {formatShortDate(day.date)}
                       </p>
                       <p className="font-medium text-sm mt-0.5">
@@ -186,7 +186,7 @@ export default function CalendarPage() {
             <div className="card p-5 lg:sticky lg:top-6">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm text-ink-subtle tabular-nums">
+                  <p className="text-sm text-ink-muted tabular-nums">
                     {formatLongDate(selected.date)}
                   </p>
                   <h2 className="mt-1 font-semibold">Day {selected.dayNumber}</h2>
@@ -218,7 +218,7 @@ export default function CalendarPage() {
                     <p className="mt-1 text-sm text-ink-muted">
                       {s.chapters.map(formatChapterRange).join(", ")}
                     </p>
-                    <p className="text-sm text-ink-subtle tabular-nums mt-0.5">
+                    <p className="text-sm text-ink-muted tabular-nums mt-0.5">
                       Scheduled {s.scheduledTime} · {s.chapterCount} chapters
                     </p>
                     {s.status !== "completed" && (
