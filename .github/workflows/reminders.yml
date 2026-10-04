@@ -12,6 +12,6 @@ jobs:
     steps:
       - name: Trigger reminder push sweep
         run: >-
-          curl -fsS -X GET
+          curl -fsSL -X GET
           -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
-          "https://bible-reading-tracker-eight.vercel.app/api/cron/reminders"
+          "https://bible-track.vercel.app/api/cron/reminders"
