@@ -1,6 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  disablePush,
+  enablePush,
+  getActiveSubscription,
+  getPushConfig,
+  pushSupported,
+} from "@/lib/push/subscribe-client";
 
 type Status =
   | "loading"
@@ -9,25 +16,6 @@ type Status =
   | "denied"
   | "on"
   | "off";
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const raw = atob(base64);
-  const output = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) {
-    output[i] = raw.charCodeAt(i);
-  }
-  return output;
-}
-
-function b64url(bytes: ArrayBuffer | null): string {
-  if (!bytes) return "";
-  const bytesArr = new Uint8Array(bytes);
-  let raw = "";
-  for (const b of bytesArr) raw += String.fromCharCode(b);
-  return btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
 
 export function PushToggle() {
   const [status, setStatus] = useState<Status>("loading");
@@ -38,27 +26,20 @@ export function PushToggle() {
   useEffect(() => {
     let cancelled = false;
     async function init() {
-      if (
-        typeof window === "undefined" ||
-        !("serviceWorker" in navigator) ||
-        !("PushManager" in window) ||
-        typeof Notification === "undefined"
-      ) {
+      if (!pushSupported()) {
         if (!cancelled) setStatus("unsupported");
         return;
       }
       try {
-        const res = await fetch("/api/push/subscribe");
-        const data = await res.json();
+        const config = await getPushConfig();
         if (cancelled) return;
-        if (!data.configured || !data.publicKey) {
+        if (!config.configured || !config.publicKey) {
           setStatus("unconfigured");
           return;
         }
-        setPublicKey(data.publicKey);
+        setPublicKey(config.publicKey);
 
-        const reg = await navigator.serviceWorker.getRegistration();
-        const sub = reg ? await reg.pushManager.getSubscription() : null;
+        const sub = await getActiveSubscription();
         if (cancelled) return;
         if (sub) {
           setStatus("on");
@@ -82,36 +63,16 @@ export function PushToggle() {
     setBusy(true);
     setNote(null);
     try {
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        setStatus(permission === "denied" ? "denied" : "off");
+      const result = await enablePush(publicKey);
+      if (result.ok) {
+        setStatus("on");
+        setNote(result.note);
+      } else if (result.note === "denied") {
+        setStatus("denied");
         setNote("Permission not granted.");
-        return;
+      } else {
+        setNote(result.note);
       }
-      const reg = await navigator.serviceWorker.register("/sw.js");
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
-      });
-      const res = await fetch("/api/push/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          endpoint: sub.endpoint,
-          keys: {
-            p256dh: b64url(sub.getKey("p256dh")),
-            auth: b64url(sub.getKey("auth")),
-          },
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to save subscription");
-      }
-      setStatus("on");
-      setNote("Push notifications enabled.");
-    } catch (err) {
-      setNote(err instanceof Error ? err.message : "Failed to enable push");
     } finally {
       setBusy(false);
     }
@@ -121,20 +82,9 @@ export function PushToggle() {
     setBusy(true);
     setNote(null);
     try {
-      const reg = await navigator.serviceWorker.getRegistration();
-      const sub = reg ? await reg.pushManager.getSubscription() : null;
-      if (sub) {
-        await fetch("/api/push/subscribe", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endpoint: sub.endpoint }),
-        });
-        await sub.unsubscribe();
-      }
+      const result = await disablePush();
       setStatus("off");
-      setNote("Push notifications disabled.");
-    } catch (err) {
-      setNote(err instanceof Error ? err.message : "Failed to disable push");
+      setNote(result.note);
     } finally {
       setBusy(false);
     }
@@ -183,7 +133,7 @@ export function PushToggle() {
             : "Enable push notifications"}
       </label>
       <p className="text-sm text-ink-muted">
-        Get nudges from group members when you miss a reading — even when the
+        Get reading reminders and group nudges on your device — even when the
         app is closed. iPhone/iPad: add the app to your Home Screen first; push
         requires the installed version.
       </p>

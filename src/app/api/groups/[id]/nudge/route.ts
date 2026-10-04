@@ -75,6 +75,7 @@ export async function POST(
         title: `${fromName} nudged you`,
         body: `Open ${group.name} and get today's reading done.`,
         url: `/groups/${group.id}`,
+        tag: "bible-nudge",
       });
     }
 

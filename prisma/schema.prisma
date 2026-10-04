@@ -27,8 +27,9 @@ model User {
   notificationPrefs     NotificationPreference?
   groupsOwned           Group[]              @relation("GroupOwner")
   groupMemberships      GroupMember[]
-  nudgesSent            Nudge[]              @relation("NudgeFrom")
+  nudgesSent            Nudge[] @relation("NudgeFrom")
   pushSubscriptions     PushSubscription[]
+  remindersSent         ReminderSent[]
 }
 
 model Account {
@@ -233,4 +234,17 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model ReminderSent {
+  id        String   @id @default(cuid())
+  userId    String
+  sessionId String
+  kind      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sessionId, kind])
+  @@index([userId, createdAt])
 }

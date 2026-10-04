@@ -34,6 +34,7 @@ self.addEventListener("push", (event) => {
       body: data.body,
       icon: "/icons/icon-192.svg",
       badge: "/icons/icon-192.svg",
+      tag: data.tag || "bible-reminder",
       data: { url: data.url || "/dashboard" },
     })
   );
@@ -45,7 +46,10 @@ self.addEventListener("notificationclick", (event) => {
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
       for (const client of list) {
-        if ("focus" in client) return client.focus();
+        if ("focus" in client) {
+          if ("navigate" in client) return client.navigate(url).then((c) => c || client.focus());
+          return client.focus();
+        }
       }
       if (self.clients.openWindow) return self.clients.openWindow(url);
     })

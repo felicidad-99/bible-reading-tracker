@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatChapters, sessionLabel } from "@/lib/reminder-window";
 
 interface DashboardPayload {
   plan?: unknown;
@@ -61,6 +62,7 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
     action: string;
   } | null>(null);
   const notified = useRef(new Set<string>());
+  const subscribed = useRef<boolean | null>(null);
   const [prefs, setPrefs] = useState<{
     enabled: boolean;
     beforeMinutes: number;
@@ -68,12 +70,42 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
     missedAfterMinutes: number;
   } | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+      subscribed.current = false;
+      return;
+    }
+    navigator.serviceWorker
+      .getRegistration()
+      .then((reg) => (reg ? reg.pushManager.getSubscription() : null))
+      .then((sub) => {
+        if (!cancelled) subscribed.current = Boolean(sub);
+      })
+      .catch(() => {
+        if (!cancelled) subscribed.current = false;
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const showToast = useCallback(
-    (title: string, body: string, href = "/dashboard", action = "Continue reading") => {
+    (
+      title: string,
+      body: string,
+      href = "/dashboard",
+      action = "Continue reading",
+      tag = "bible-reminder"
+    ) => {
       setToast({ title, body, href, action });
-      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      if (
+        subscribed.current !== true &&
+        typeof Notification !== "undefined" &&
+        Notification.permission === "granted"
+      ) {
         try {
-          new Notification(title, { body, tag: "bible-reminder" });
+          new Notification(title, { body, tag });
         } catch {
           // notification blocked at OS level
         }
@@ -111,7 +143,8 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
             "Group nudge",
             `${n.fromName} nudged you to read in ${n.groupName}.`,
             `/groups/${n.groupId}`,
-            "Open group"
+            "Open group",
+            "bible-nudge"
           );
           fetch(`/api/nudges/${n.id}`, {
             method: "PATCH",
@@ -242,20 +275,4 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
       )}
     </>
   );
-}
-
-function sessionLabel(n: number): string {
-  return n === 1 ? "morning" : n === 2 ? "afternoon" : "evening";
-}
-
-function formatChapters(chapters: unknown): string {
-  if (!Array.isArray(chapters) || chapters.length === 0) return "your reading";
-  return chapters
-    .map((c) => {
-      const r = c as { bookName: string; start: number; end: number };
-      return r.start === r.end
-        ? `${r.bookName} ${r.start}`
-        : `${r.bookName} ${r.start}-${r.end}`;
-    })
-    .join(", ");
 }

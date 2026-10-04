@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { ReminderProvider } from "@/components/reminder-provider";
+import { PushResync } from "@/components/push-resync";
 
 export default async function AuthedLayout({
   children,
@@ -15,6 +16,7 @@ export default async function AuthedLayout({
 
   return (
     <AppShell>
+      <PushResync />
       <ReminderProvider>{children}</ReminderProvider>
     </AppShell>
   );

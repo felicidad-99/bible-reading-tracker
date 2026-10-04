@@ -7,6 +7,7 @@ import {
   type ChapterRange,
 } from "@/lib/plan/generator";
 import { GroupsSection } from "@/components/groups-section";
+import { PushPromptCard } from "@/components/push-prompt-card";
 
 interface SessionInfo {
   id: string;
@@ -222,6 +223,8 @@ export default function DashboardPage() {
           )}
         </div>
       )}
+
+      <PushPromptCard />
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 fade-up fade-up-delay-1">
         <StatCard

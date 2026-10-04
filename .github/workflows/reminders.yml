@@ -1,0 +1,17 @@
+name: Reminder push cron
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  fire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger reminder push sweep
+        run: >-
+          curl -fsS -X GET
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+          "https://bible-reading-tracker-eight.vercel.app/api/cron/reminders"
