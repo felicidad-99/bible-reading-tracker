@@ -1,3 +1,6 @@
+# Fires the prod reminder sweep every 10 minutes.
+# Auth: Bearer CRON_SECRET (GitHub Actions secret mirrors the Vercel env var).
+# Canonical production domain: https://bible-track.vercel.app
 name: Reminder push cron
 
 on:
