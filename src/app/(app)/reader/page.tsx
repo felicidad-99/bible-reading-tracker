@@ -101,6 +101,7 @@ function ReaderInner() {
   const [loadingSession, setLoadingSession] = useState(!!sessionId);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("not_started");
+  const [showControls, setShowControls] = useState(true);
   const [readSet, setReadSet] = useState<Set<string>>(new Set());
   const [latestSessionId, setLatestSessionId] = useState<string | null>(null);
   const [audioInfo, setAudioInfo] = useState<{
@@ -431,66 +432,67 @@ function ReaderInner() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="eyebrow">
+      <header className="flex items-center gap-2 sm:gap-3">
+        <Link
+          href="/dashboard"
+          className="btn btn-ghost w-11 h-11 p-0 shrink-0 justify-center"
+          aria-label="Back to Today"
+        >
+          <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+            arrow_back
+          </span>
+        </Link>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm text-ink-muted truncate">
             {session
-              ? `${SESSION_NAMES[session.sessionNumber - 1] ?? "Session"} · Day ${session.readingDay.dayNumber}`
+              ? `Session ${session.sessionNumber} · Day ${session.readingDay.dayNumber}`
               : "Reader"}
           </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+          <h1 className="text-xl md:text-2xl font-semibold tracking-tight truncate">
             {chapter
               ? `${chapter.bookName} ${chapter.chapter}`
               : session
                 ? session.chapters[0]?.bookName ?? "Reading"
                 : "Reading"}
           </h1>
-          <p className="mt-1 text-sm text-ink-muted">
-            {chapter?.translationName ?? translation}
-            {session && (
-              <>
-                {" · "}
-                {session.chapters
-                  .map((c) =>
-                    c.start === c.end
-                      ? `${c.bookName} ${c.start}`
-                      : `${c.bookName} ${c.start}-${c.end}`
-                  )
-                  .join(", ")}
-              </>
-            )}
-          </p>
-          {chapter?.copyright && (
-            <p className="mt-1 text-sm text-ink-muted">{chapter.copyright}</p>
-          )}
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`status-pill status-${status === "completed" ? "completed" : status === "in_progress" || status === "in-progress" ? "in-progress" : status === "missed" ? "missed" : "not-started"}`}>
-            {status === "completed"
-              ? "Completed"
-              : status === "in_progress" || status === "in-progress"
-                ? "In progress"
-                : "Not started"}
+        <span className="shrink-0 text-sm font-medium bg-surface-sunken px-2.5 py-1 rounded-full">
+          {chapter?.translationId ?? translation}
+        </span>
+        <button
+          type="button"
+          className="btn btn-ghost w-11 h-11 p-0 shrink-0 justify-center"
+          onClick={() => setShowControls((v) => !v)}
+          aria-expanded={showControls}
+          aria-controls="reader-controls"
+          aria-label="Reading display options"
+        >
+          <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+            format_size
           </span>
-        </div>
+        </button>
       </header>
 
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 card px-4 py-3">
-        <div className="flex items-center gap-3 text-sm text-ink-muted">
-          <span className="tabular-nums">
-            {readCount} of {totalAssigned} chapters read
-          </span>
-          <div className="progress-track w-28" aria-hidden>
-            <div
-              className="progress-fill"
-              style={{
-                width: totalAssigned
-                  ? `${Math.round((readCount / totalAssigned) * 100)}%`
-                  : "0%",
-              }}
-            />
+      {showControls && (
+        <div
+          id="reader-controls"
+          className="mt-3 flex flex-wrap items-center justify-between gap-3 card px-4 py-3"
+        >
+          <div className="flex items-center gap-3 text-sm text-ink-muted">
+            <span className="tabular-nums">
+              {readCount} of {totalAssigned} chapters read
+            </span>
+            <div className="progress-track w-28" aria-hidden>
+              <div
+                className="progress-fill"
+                style={{
+                  width: totalAssigned
+                    ? `${Math.round((readCount / totalAssigned) * 100)}%`
+                    : "0%",
+                }}
+              />
+            </div>
           </div>
-        </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -517,7 +519,8 @@ function ReaderInner() {
             {showVerses ? "Verses on" : "Verses off"}
           </button>
         </div>
-      </div>
+        </div>
+      )}
 
       {current && (
         <AudioBar
@@ -555,9 +558,9 @@ function ReaderInner() {
         )}
 
         {!loadingChapter && chapter && (
-          <div className="font-serif">
-            <p className="text-sm font-sans text-ink-muted mb-6 tracking-wide uppercase">
-              {chapter.bookName} {chapter.chapter} · {chapter.translationName}
+          <div className="font-scripture">
+            <p className="text-sm font-sans text-ink-muted mb-6 tracking-[0.2em] uppercase">
+              Chapter {chapter.chapter}
             </p>
             <div className="space-y-4">
               {chapter.verses.map((v) => (
@@ -570,7 +573,7 @@ function ReaderInner() {
                   }
                 >
                   {showVerses && (
-                    <sup className="text-accent font-sans text-[0.7em] mr-1 tabular-nums">
+                    <sup className="text-accent-ink font-sans text-[0.7em] mr-1 tabular-nums">
                       {v.number}
                     </sup>
                   )}
@@ -593,60 +596,34 @@ function ReaderInner() {
       </article>
 
       <nav
-        className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
+        className="mt-6 flex gap-3"
         aria-label="Chapter navigation"
       >
-        <div className="flex gap-3 md:contents">
-          <button
-            type="button"
-            className="btn btn-secondary flex-1 md:flex-none md:order-1"
-            disabled={!canPrev || !current}
-            onClick={() => {
-              if (!current) return;
-              const p = prevChapterRef(current.bookId, current.chapter);
-              if (p) setCurrent(p);
-            }}
-          >
-            Previous
-          </button>
+        <button
+          type="button"
+          className="btn btn-secondary flex-1"
+          disabled={!canPrev || !current}
+          onClick={() => {
+            if (!current) return;
+            const p = prevChapterRef(current.bookId, current.chapter);
+            if (p) setCurrent(p);
+          }}
+        >
+          Previous
+        </button>
 
-          <button
-            type="button"
-            className="btn btn-secondary flex-1 md:flex-none md:order-3"
-            disabled={!canNext || !current}
-            onClick={() => {
-              if (!current) return;
-              const n = nextChapterRef(current.bookId, current.chapter);
-              if (n) setCurrent(n);
-            }}
-          >
-            Next
-          </button>
-        </div>
-
-        {status === "not_started" && (
-          <button
-            type="button"
-            className="btn btn-primary md:order-2"
-            onClick={startSession}
-          >
-            Mark as started
-          </button>
-        )}
-        {status !== "completed" && (
-          <button
-            type="button"
-            className="btn btn-primary md:order-2"
-            onClick={completeSession}
-          >
-            Mark as Completed
-          </button>
-        )}
-        {status === "completed" && (
-          <span className="status-pill status-completed md:order-2">
-            Session complete
-          </span>
-        )}
+        <button
+          type="button"
+          className="btn btn-secondary flex-1"
+          disabled={!canNext || !current}
+          onClick={() => {
+            if (!current) return;
+            const n = nextChapterRef(current.bookId, current.chapter);
+            if (n) setCurrent(n);
+          }}
+        >
+          Next
+        </button>
       </nav>
 
       {error && chapter && (
@@ -663,6 +640,60 @@ function ReaderInner() {
         >
           Jump to Genesis 1
         </button>
+      </div>
+
+      <div className="sticky bottom-24 md:bottom-6 z-10 mt-4 card p-4 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold uppercase tracking-wide">
+            Session {session?.sessionNumber ?? "—"}
+            {session ? ` — ${SESSION_NAMES[session.sessionNumber - 1] ?? ""}` : ""}
+          </p>
+          <p className="text-sm text-ink-muted tabular-nums mt-0.5">
+            {session
+              ? session.chapters
+                  .map((c) =>
+                    c.start === c.end
+                      ? `${c.bookName} ${c.start}`
+                      : `${c.bookName} ${c.start}-${c.end}`
+                  )
+                  .join(", ")
+              : ""}
+            {session ? ` · ${readCount} of ${totalAssigned} chapters read` : ""}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {status === "completed" ? (
+            <span className="status-pill status-completed">Session complete</span>
+          ) : (
+            <>
+              {status === "not_started" && (
+                <button
+                  type="button"
+                  className="btn btn-ghost text-sm"
+                  onClick={startSession}
+                >
+                  Mark as started
+                </button>
+              )}
+              <button
+                type="button"
+                className="btn btn-primary text-sm flex-1 sm:flex-none"
+                onClick={completeSession}
+              >
+                <span
+                  className="material-symbols-outlined text-[18px]"
+                  aria-hidden="true"
+                >
+                  check_circle
+                </span>
+                Mark session complete
+              </button>
+            </>
+          )}
+          <Link href="/dashboard" className="btn btn-secondary text-sm">
+            Skip for now
+          </Link>
+        </div>
       </div>
     </div>
   );

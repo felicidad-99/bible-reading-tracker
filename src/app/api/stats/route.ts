@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUserId, getActivePlan, todayDateString } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
-import { TOTAL_CHAPTERS } from "@/lib/plan/bible-books";
 import { calculateStreaks } from "@/lib/plan/generator";
 
 export async function GET() {
@@ -18,7 +17,8 @@ export async function GET() {
 
     const today = todayDateString(user?.timezone);
     const completedChapters = plan.progress.length;
-    const percent = Math.round((completedChapters / TOTAL_CHAPTERS) * 1000) / 10;
+    const planChapters = plan.days.reduce((sum, d) => sum + d.totalChapters, 0);
+    const percent = planChapters > 0 ? Math.round((completedChapters / planChapters) * 1000) / 10 : 0;
 
     const completedDates = plan.days
       .filter((d) => d.status === "completed")
@@ -51,7 +51,7 @@ export async function GET() {
       completedChapters > 0 && dayElapsed > 0
         ? (() => {
             const rate = completedChapters / dayElapsed;
-            const remaining = TOTAL_CHAPTERS - completedChapters;
+            const remaining = planChapters - completedChapters;
             const daysNeeded = Math.ceil(remaining / rate);
             const est = new Date(today + "T00:00:00");
             est.setDate(est.getDate() + daysNeeded);
@@ -59,10 +59,86 @@ export async function GET() {
           })()
         : plan.endDate;
 
+    const progressByDate = new Map<string, number>();
+    for (const p of plan.progress) {
+      const iso = p.completedAt.toISOString().slice(0, 10);
+      progressByDate.set(iso, (progressByDate.get(iso) ?? 0) + 1);
+    }
+
+    const todayUtc = new Date(today + "T00:00:00Z");
+    const dow = (todayUtc.getUTCDay() + 6) % 7;
+    const monday = new Date(todayUtc);
+    monday.setUTCDate(monday.getUTCDate() - dow);
+    const dayByDate = new Map(plan.days.map((d) => [d.date, d]));
+    const week: Array<{
+      date: string;
+      chapters: number;
+      completed: boolean;
+      isToday: boolean;
+    }> = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setUTCDate(monday.getUTCDate() + i);
+      const iso = d.toISOString().slice(0, 10);
+      week.push({
+        date: iso,
+        chapters: progressByDate.get(iso) ?? 0,
+        completed: dayByDate.get(iso)?.status === "completed",
+        isToday: iso === today,
+      });
+    }
+    const weekChapters = week.reduce((sum, d) => sum + d.chapters, 0);
+    const weekDone = week.filter((d) => d.completed).length;
+
+    const sessionCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0 };
+    const sessionTimes: Record<number, string> = {};
+    for (const day of plan.days) {
+      for (const s of day.sessions) {
+        if (s.status === "completed") {
+          sessionCounts[s.sessionNumber] =
+            (sessionCounts[s.sessionNumber] ?? 0) + 1;
+          if (!sessionTimes[s.sessionNumber]) {
+            sessionTimes[s.sessionNumber] = s.scheduledTime;
+          }
+        }
+      }
+    }
+    const favNum = Number(
+      Object.keys(sessionCounts).reduce(
+        (best, key) =>
+          (sessionCounts[Number(key)] ?? 0) > (sessionCounts[best] ?? 0)
+            ? Number(key)
+            : best,
+        1
+      )
+    );
+    const favourite =
+      sessionCounts[favNum] > 0
+        ? {
+            label:
+              favNum === 1 ? "Morning" : favNum === 2 ? "Afternoon" : "Evening",
+            time: sessionTimes[favNum] ?? null,
+          }
+        : null;
+
+    const avgSessionChapters =
+      sessionsCompleted > 0
+        ? Math.round((completedChapters / sessionsCompleted) * 10) / 10
+        : 0;
+
+    const bookCounts = new Map<string, number>();
+    for (const p of plan.progress) {
+      bookCounts.set(p.bookId, (bookCounts.get(p.bookId) ?? 0) + 1);
+    }
+    let topBook: { id: string; chapters: number } | null = null;
+    for (const [id, count] of bookCounts) {
+      if (!topBook || count > topBook.chapters) topBook = { id, chapters: count };
+    }
+
     return NextResponse.json({
       stats: {
         completedChapters,
-        totalChapters: TOTAL_CHAPTERS,
+        totalChapters: planChapters,
         percent,
         currentStreak: streaks.currentStreak,
         longestStreak: streaks.longestStreak,
@@ -77,6 +153,12 @@ export async function GET() {
         translation: plan.translation,
         frequency: plan.frequency,
         startDate: plan.startDate,
+        week,
+        weekChapters,
+        weekDone,
+        favourite,
+        avgSessionChapters,
+        topBook,
       },
     });
   } catch (err) {

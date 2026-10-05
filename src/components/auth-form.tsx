@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function AuthForm({ mode }: { mode: "signin" | "signup" | "forgot" | "reset" }) {
   const router = useRouter();
@@ -9,6 +10,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" | "forgot" | "res
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [token, setToken] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -105,7 +107,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" | "forgot" | "res
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-sm w-full">
+    <form onSubmit={handleSubmit} className="space-y-4 w-full">
       {mode === "signup" && (
         <div>
           <label className="label" htmlFor="name">Name</label>
@@ -122,7 +124,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" | "forgot" | "res
 
       {mode !== "reset" && (
         <div>
-          <label className="label" htmlFor="email">Email</label>
+          <label className="label" htmlFor="email">Email address</label>
           <input
             id="email"
             type="email"
@@ -158,18 +160,40 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" | "forgot" | "res
           <label className="label" htmlFor="password">
             Password {mode !== "reset" && <span className="text-ink-muted">(min 8 chars)</span>}
           </label>
-          <input
-            id="password"
-            type="password"
-            required
-            minLength={8}
-            className="input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete={
-              mode === "signin" ? "current-password" : "new-password"
-            }
-          />
+          <div className="relative flex items-center">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              required
+              minLength={8}
+              className="input pr-11"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete={
+                mode === "signin" ? "current-password" : "new-password"
+              }
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute right-1.5 w-9 h-9 flex items-center justify-center rounded-full text-ink-muted hover:text-ink transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                {showPassword ? "visibility_off" : "visibility"}
+              </span>
+            </button>
+          </div>
+          {mode === "signin" && (
+            <div className="flex justify-end pt-2">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-ink-muted hover:text-ink transition-colors duration-150"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
@@ -183,7 +207,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" | "forgot" | "res
       <button
         type="submit"
         disabled={loading}
-        className="btn btn-primary w-full"
+        className="btn btn-primary w-full rounded-full py-3.5 text-base justify-center"
       >
         {loading
           ? "Working…"

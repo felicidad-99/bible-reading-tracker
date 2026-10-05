@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { generateReadingPlan, type Frequency } from "@/lib/plan/generator";
+import { getPresetById, chaptersForPreset } from "@/lib/plan/presets";
 
 export type PlanWithRelations = Prisma.ReadingPlanGetPayload<{
   include: {
@@ -34,13 +35,42 @@ export async function requireUserId(): Promise<string> {
   return userId;
 }
 
-export const createPlanSchema = z.object({
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  durationDays: z.number().int().min(1).max(3650),
-  frequency: z.union([z.literal(1), z.literal(2), z.literal(3)]),
-  translation: z.string().min(2).max(12),
-  sessionTimes: z.array(z.string().regex(/^\d{2}:\d{2}$/)).min(1).max(3),
-});
+export const createPlanSchema = z
+  .object({
+    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    durationDays: z.number().int().min(1).max(3650).optional(),
+    frequency: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+    translation: z.string().min(2).max(12),
+    sessionTimes: z.array(z.string().regex(/^\d{2}:\d{2}$/)).min(1).max(3),
+    presetId: z.string().min(1).max(64).optional(),
+    name: z.string().trim().min(1).max(80).optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.presetId) {
+      if (!getPresetById(val.presetId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["presetId"],
+          message: "Unknown plan preset",
+        });
+      }
+      return;
+    }
+    if (val.durationDays === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["durationDays"],
+        message: "durationDays is required without a presetId",
+      });
+    }
+    if (val.frequency === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["frequency"],
+        message: "frequency is required without a presetId",
+      });
+    }
+  });
 
 export type CreatePlanInput = z.infer<typeof createPlanSchema>;
 
@@ -77,10 +107,16 @@ export async function persistPlan(
   input: CreatePlanInput,
   groupId?: string
 ) {
+  const preset = input.presetId ? getPresetById(input.presetId) : undefined;
+  const durationDays = preset?.durationDays ?? input.durationDays;
+  const frequency = (preset?.frequency ?? input.frequency) as Frequency;
+  const chapters = preset ? chaptersForPreset(preset) : undefined;
+
   const generated = generateReadingPlan({
     startDate: input.startDate,
-    durationDays: input.durationDays,
-    frequency: input.frequency as Frequency,
+    durationDays: durationDays as number,
+    frequency,
+    ...(chapters ? { chapters } : {}),
   });
 
   const existingActive = await prisma.readingPlan.findFirst({
@@ -96,6 +132,7 @@ export async function persistPlan(
   const plan = await prisma.readingPlan.create({
     data: {
       userId,
+      name: input.name ?? preset?.name ?? null,
       startDate: generated.startDate,
       endDate: generated.endDate,
       durationDays: generated.durationDays,

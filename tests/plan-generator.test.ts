@@ -10,6 +10,12 @@ import {
   formatChapterRange,
 } from "@/lib/plan/generator";
 import { TOTAL_CHAPTERS, getFlatChapters, TOTAL_OT_CHAPTERS, TOTAL_NT_CHAPTERS } from "@/lib/plan/bible-books";
+import {
+  PLAN_PRESETS,
+  chaptersForPreset,
+  derivePlanName,
+  getPresetById,
+} from "@/lib/plan/presets";
 
 function collectChapterKeys(days: ReturnType<typeof generateReadingPlan>["days"]) {
   const keys: string[] = [];
@@ -326,5 +332,95 @@ describe("regenerateRemainingPlan", () => {
       existing[1].sessions[0].chapters
     );
     expect(regenerated[3].sessions.length).toBe(2);
+  });
+});
+
+describe("preset chapter subsets", () => {
+  it("generates a Gospels-only plan covering exactly those chapters", () => {
+    const preset = getPresetById("gospels-40")!;
+    const chapters = chaptersForPreset(preset);
+    expect(chapters).toHaveLength(89);
+    expect(new Set(chapters.map((c) => c.bookId))).toEqual(
+      new Set(["MAT", "MRK", "LUK", "JHN"])
+    );
+    expect(chapters[0].index).toBe(0);
+    expect(chapters[88].index).toBe(88);
+
+    const plan = generateReadingPlan({
+      startDate: "2026-10-01",
+      durationDays: preset.durationDays,
+      frequency: preset.frequency,
+      chapters,
+    });
+
+    expect(plan.days).toHaveLength(40);
+    expect(plan.totalChapters).toBe(89);
+    const keys = collectChapterKeys(plan.days);
+    expect(keys).toHaveLength(89);
+    expect(new Set(keys).size).toBe(89);
+    const expected = new Set(chapters.map((c) => `${c.bookId}:${c.chapter}`));
+    expect(new Set(keys)).toEqual(expected);
+  });
+
+  it("generates NT and Psalms&Proverbs presets with correct totals", () => {
+    const nt = getPresetById("nt-90")!;
+    const ntPlan = generateReadingPlan({
+      startDate: "2026-10-01",
+      durationDays: nt.durationDays,
+      frequency: nt.frequency,
+      chapters: chaptersForPreset(nt),
+    });
+    expect(ntPlan.totalChapters).toBe(260);
+    expect(ntPlan.days).toHaveLength(90);
+
+    const pp = getPresetById("psalms-proverbs")!;
+    const ppPlan = generateReadingPlan({
+      startDate: "2026-10-01",
+      durationDays: pp.durationDays,
+      frequency: pp.frequency,
+      chapters: chaptersForPreset(pp),
+    });
+    expect(ppPlan.totalChapters).toBe(181);
+    expect(collectChapterKeys(ppPlan.days)[0]).toBe("PSA:1");
+  });
+
+  it("keeps full-Bible generation unchanged when no chapters provided", () => {
+    const plan = generateReadingPlan({
+      startDate: "2026-10-01",
+      durationDays: 365,
+      frequency: 1,
+    });
+    expect(plan.totalChapters).toBe(TOTAL_CHAPTERS);
+  });
+
+  it("rejects an empty chapter subset", () => {
+    expect(() =>
+      generateReadingPlan({
+        startDate: "2026-10-01",
+        durationDays: 10,
+        frequency: 1,
+        chapters: [],
+      })
+    ).toThrow("Chapter subset cannot be empty");
+  });
+});
+
+describe("plan presets helpers", () => {
+  it("derives display names from duration and frequency", () => {
+    expect(derivePlanName(365, 1)).toBe("Bible in a Year");
+    expect(derivePlanName(90, 1)).toBe("New Testament in 90 Days");
+    expect(derivePlanName(40, 1)).toBe("Gospels in 40 Days");
+    expect(derivePlanName(77, 2)).toBe("Your reading plan");
+  });
+
+  it("every preset resolves to a non-empty chapter list", () => {
+    for (const preset of PLAN_PRESETS) {
+      const chapters = chaptersForPreset(preset);
+      expect(chapters.length).toBeGreaterThan(0);
+      const ids = new Set(chapters.map((c) => c.bookId));
+      if (preset.bookIds) {
+        expect([...ids].every((id) => preset.bookIds!.includes(id))).toBe(true);
+      }
+    }
   });
 });

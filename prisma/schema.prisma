@@ -80,6 +80,7 @@ model PasswordReset {
 model ReadingPlan {
   id           String   @id @default(cuid())
   userId       String
+  name         String?
   startDate    String
   endDate      String
   durationDays Int

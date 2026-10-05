@@ -102,10 +102,10 @@ export async function sendPasswordReset(email: string): Promise<void> {
   await transporter.sendMail({
     from: process.env.EMAIL_FROM,
     to: user.email,
-    subject: "Reset your Bible Reading Tracker password",
+    subject: "Reset your Bible Track password",
     text: `Reset your password: ${resetUrl}\nThis link expires in 1 hour.`,
     html: `
-      <p>Reset your Bible Reading Tracker password:</p>
+      <p>Reset your Bible Track password:</p>
       <p><a href="${resetUrl}">Reset password</a></p>
       <p>This link expires in 1 hour. If you did not request this, ignore this email.</p>
     `,

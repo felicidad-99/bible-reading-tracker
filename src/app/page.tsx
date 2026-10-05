@@ -10,7 +10,12 @@ export default function LandingPage() {
     <div className="min-h-dvh flex flex-col">
       <header className="border-b border-line">
         <div className="max-w-5xl mx-auto px-4 min-h-16 py-2 flex flex-wrap items-center justify-between gap-2">
-          <span className="font-semibold tracking-tight text-lg">Bible Tracker</span>
+          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight text-lg">
+            <span className="w-7 h-7 rounded-lg bg-sandstone-soft flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-ember text-[18px] fill-icon" aria-hidden="true">local_fire_department</span>
+            </span>
+            Bible Track
+          </Link>
           <nav className="flex items-center gap-2" aria-label="Account">
             <Link href="/signin" className="btn btn-ghost text-sm">
               Sign in
@@ -24,7 +29,7 @@ export default function LandingPage() {
 
       <main className="flex-1">
         <section className="max-w-5xl mx-auto px-4 pt-16 pb-20 md:pt-24 md:pb-28">
-          <p className="eyebrow fade-up">Bible Reading Tracker</p>
+          <p className="eyebrow fade-up">A quieter way to keep the Word</p>
           <h1 className="mt-4 text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05] max-w-3xl fade-up fade-up-delay-1">
             Read the Bible. Build the habit. Finish what you started.
           </h1>

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { requireUserId, getActivePlan, todayDateString } from "@/lib/plans";
 import { calculateStreaks } from "@/lib/plan/generator";
 import { prisma } from "@/lib/prisma";
-import { TOTAL_CHAPTERS } from "@/lib/plan/bible-books";
 
 async function remindersPayload(userId: string) {
   const yesterday = new Date(Date.now() - 86400000)
@@ -85,7 +84,7 @@ export async function GET(req: Request) {
     }
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { timezone: true },
+      select: { timezone: true, name: true },
     });
 
     const plan = await getActivePlan(userId);
@@ -95,9 +94,10 @@ export async function GET(req: Request) {
 
     const today = todayDateString(user?.timezone);
     const completedChapters = plan.progress.length;
+    const planChapters = plan.days.reduce((sum, d) => sum + d.totalChapters, 0);
     const percent =
-      TOTAL_CHAPTERS > 0
-        ? Math.round((completedChapters / TOTAL_CHAPTERS) * 1000) / 10
+      planChapters > 0
+        ? Math.round((completedChapters / planChapters) * 1000) / 10
         : 0;
 
     const completedDates = plan.days
@@ -140,11 +140,43 @@ export async function GET(req: Request) {
         return a.sessionNumber - b.sessionNumber;
       })[0];
 
+    const todayUtc = new Date(now + "T00:00:00Z");
+    const dow = (todayUtc.getUTCDay() + 6) % 7;
+    const monday = new Date(todayUtc);
+    monday.setUTCDate(monday.getUTCDate() - dow);
+    const statusByDate = new Map(plan.days.map((d) => [d.date, d.status]));
+    const week: Array<{ date: string; status: string }> = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setUTCDate(monday.getUTCDate() + i);
+      const iso = d.toISOString().slice(0, 10);
+      const planStatus = statusByDate.get(iso);
+      const status = !planStatus
+        ? "none"
+        : iso > now
+          ? "upcoming"
+          : iso === now
+            ? planStatus === "completed"
+              ? "completed"
+              : "today"
+            : planStatus;
+      week.push({ date: iso, status });
+    }
+    const weekTarget = 5;
+    const weekDone = week.slice(0, 5).filter((d) => d.status === "completed").length;
+
     return NextResponse.json({
-      plan: { id: plan.id, status: plan.status },
+      user: { name: user?.name ?? null },
+      plan: {
+        id: plan.id,
+        status: plan.status,
+        name: plan.name,
+        durationDays: plan.durationDays,
+        frequency: plan.frequency,
+      },
       stats: {
         completedChapters,
-        totalChapters: TOTAL_CHAPTERS,
+        totalChapters: planChapters,
         percent,
         currentDay,
         totalDays,
@@ -154,10 +186,13 @@ export async function GET(req: Request) {
         sessionsCompleted,
         sessionsTotal: sessionsAll.length,
         sessionsMissed,
-        remainingChapters: TOTAL_CHAPTERS - completedChapters,
+        remainingChapters: Math.max(planChapters - completedChapters, 0),
         finishDate: plan.endDate,
         todayDay: todayDay ?? null,
         missedCount: missedDays.length,
+        week,
+        weekTarget,
+        weekDone,
         nextReading: nextReading
           ? {
               sessionId: nextReading.id,

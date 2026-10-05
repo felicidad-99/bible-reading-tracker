@@ -253,7 +253,10 @@ export default function GroupDetailPage() {
               className="btn btn-secondary text-sm"
               onClick={() => setAnchor(format(addDays(parseISO(anchor), -7), "yyyy-MM-dd"))}
             >
-              ← Previous
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                arrow_back
+              </span>
+              Previous
             </button>
             {!isDefaultAnchor && (
               <button
@@ -270,7 +273,10 @@ export default function GroupDetailPage() {
               onClick={() => setAnchor(format(addDays(parseISO(anchor), 7), "yyyy-MM-dd"))}
               disabled={!canGoNext}
             >
-              Next →
+              Next
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                arrow_forward
+              </span>
             </button>
           </div>
         </div>
@@ -290,7 +296,7 @@ export default function GroupDetailPage() {
                     key={date}
                     scope="col"
                     className={`px-1.5 py-2.5 font-medium text-center border-b border-line ${
-                      date === today ? "text-accent" : "text-ink-muted"
+                      date === today ? "text-accent-ink" : "text-ink-muted"
                     }`}
                   >
                     <span className="block text-sm">

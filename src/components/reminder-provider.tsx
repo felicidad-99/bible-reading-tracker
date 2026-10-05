@@ -268,7 +268,9 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
               onClick={() => setToast(null)}
               aria-label="Dismiss reminder"
             >
-              ✕
+              <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                close
+              </span>
             </button>
           </div>
         </div>

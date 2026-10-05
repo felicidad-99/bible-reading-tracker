@@ -33,6 +33,9 @@ export interface GeneratePlanInput {
   durationDays: number;
   frequency: Frequency;
   totalChapters?: number;
+  /** Optional explicit chapter list (e.g. a preset subset like the Gospels).
+   * When provided, totalChapters is derived from it and the canonical order is preserved. */
+  chapters?: FlatChapter[];
 }
 
 export interface GeneratePlanResult {
@@ -142,13 +145,21 @@ export function generateReadingPlan(
 ): GeneratePlanResult {
   validatePlanInput(input);
 
-  const totalChapters = input.totalChapters ?? TOTAL_CHAPTERS;
-  const flat = getFlatChapters().slice(0, totalChapters);
+  let flat: FlatChapter[];
+  if (input.chapters) {
+    if (input.chapters.length === 0) {
+      throw new Error("Chapter subset cannot be empty");
+    }
+    flat = input.chapters;
+  } else {
+    const totalChapters = input.totalChapters ?? TOTAL_CHAPTERS;
+    flat = getFlatChapters().slice(0, totalChapters);
 
-  if (flat.length !== totalChapters) {
-    throw new Error(
-      `Chapter catalog has ${flat.length} chapters, expected ${totalChapters}`
-    );
+    if (flat.length !== totalChapters) {
+      throw new Error(
+        `Chapter catalog has ${flat.length} chapters, expected ${totalChapters}`
+      );
+    }
   }
 
   const { startDate, durationDays, frequency } = input;

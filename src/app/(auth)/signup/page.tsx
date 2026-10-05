@@ -1,30 +1,31 @@
 import Link from "next/link";
 import { AuthForm } from "@/components/auth-form";
+import { AuthShell } from "@/components/auth-shell";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Create account" };
 
 export default function SignUpPage() {
   return (
-    <main className="min-h-dvh flex flex-col items-center justify-center px-4 py-12">
-      <Link href="/" className="text-sm text-ink-muted mb-8 hover:text-ink">
-        ← Bible Tracker
-      </Link>
-      <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-semibold tracking-tight text-center">
-          Create your account
-        </h1>
-        <p className="text-sm text-ink-muted text-center mt-2 mb-8">
-          Save your plan, progress, and reading streak.
-        </p>
-        <AuthForm mode="signup" />
-        <p className="mt-6 text-sm text-ink-muted text-center">
-          Already have an account?{" "}
-          <Link href="/signin" className="text-accent hover:underline">
-            Sign in
-          </Link>
-        </p>
+    <AuthShell subtitle="Save your plan, progress, and reading streak.">
+      <AuthForm mode="signup" />
+
+      <div
+        className="relative flex items-center justify-center my-4"
+        aria-hidden="true"
+      >
+        <div className="w-full border-t border-line" />
+        <span className="absolute bg-surface px-3 text-sm text-ink-subtle">
+          or
+        </span>
       </div>
-    </main>
+
+      <Link
+        href="/signin"
+        className="btn btn-secondary w-full rounded-full py-3.5 text-base justify-center"
+      >
+        Sign in
+      </Link>
+    </AuthShell>
   );
 }
