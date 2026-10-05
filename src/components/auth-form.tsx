@@ -107,7 +107,7 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" | "forgot" | "res
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full">
+    <form onSubmit={handleSubmit} className="space-y-3.5 w-full">
       {mode === "signup" && (
         <div>
           <label className="label" htmlFor="name">Name</label>

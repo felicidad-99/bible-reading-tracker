@@ -402,8 +402,34 @@ export default function SettingsPage() {
     router.refresh();
   }
 
+  function goBack() {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/");
+    }
+  }
+
   if (loading) {
-    return <div className="text-sm text-ink-muted">Loading settings…</div>;
+    return (
+      <div className="max-w-md mx-auto md:max-w-xl">
+        <nav className="sticky top-0 z-20 h-14 -mx-4 md:-mx-8 px-4 md:px-8 flex items-center justify-between border-b border-line bg-surface/90 backdrop-blur-md">
+          <button
+            type="button"
+            aria-label="Go back"
+            onClick={goBack}
+            className="btn btn-ghost w-11 h-11 p-0 justify-center -ml-1.5"
+          >
+            <span className="material-symbols-outlined text-[24px]" aria-hidden="true">
+              chevron_left
+            </span>
+          </button>
+          <h1 className="text-xl font-medium tracking-tight">Profile</h1>
+          <span aria-hidden="true" className="w-11 h-11 -mr-1.5" />
+        </nav>
+        <p className="pt-8 pb-4 text-sm text-ink-muted text-center">Loading settings…</p>
+      </div>
+    );
   }
 
   const planName = activePlan
@@ -427,14 +453,23 @@ export default function SettingsPage() {
     theme.charAt(0).toUpperCase() + theme.slice(1);
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <header>
-        <p className="eyebrow">Settings</p>
-        <h1 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight">
-          Profile
-        </h1>
-      </header>
+    <div className="max-w-md mx-auto md:max-w-xl">
+      <nav className="sticky top-0 z-20 h-14 -mx-4 md:-mx-8 px-4 md:px-8 flex items-center justify-between border-b border-line bg-surface/90 backdrop-blur-md">
+        <button
+          type="button"
+          aria-label="Go back"
+          onClick={goBack}
+          className="btn btn-ghost w-11 h-11 p-0 justify-center -ml-1.5"
+        >
+          <span className="material-symbols-outlined text-[24px]" aria-hidden="true">
+            chevron_left
+          </span>
+        </button>
+        <h1 className="text-xl font-medium tracking-tight">Profile</h1>
+        <span aria-hidden="true" className="w-11 h-11 -mr-1.5" />
+      </nav>
 
+      <div className="space-y-6 pt-5 pb-8">
       {message && (
         <p
           role="status"
@@ -446,7 +481,7 @@ export default function SettingsPage() {
 
       <section
         aria-label="User profile"
-        className="bg-surface-raised rounded-lg border border-line p-4 flex items-center justify-between gap-3 shadow-sm hover:border-sandstone/40 transition-colors duration-150"
+        className="bg-surface-raised rounded-lg border border-line p-4 flex items-center justify-between gap-3 shadow-sm hover:border-sandstone/30 transition-colors duration-150"
       >
         <div className="flex items-center gap-3.5 min-w-0">
           <div className="w-12 h-12 rounded-full bg-sandstone-soft border border-sandstone/30 flex items-center justify-center shrink-0">
@@ -466,6 +501,19 @@ export default function SettingsPage() {
             </span>
           </div>
         </div>
+        <button
+          type="button"
+          aria-label="Edit profile"
+          className="p-1 text-ink-subtle hover:text-ink transition-colors shrink-0 rounded-full"
+          onClick={() => {
+            toggle("account");
+            document.getElementById("account")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+        >
+          <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+            chevron_right
+          </span>
+        </button>
       </section>
 
       <section
@@ -620,9 +668,40 @@ export default function SettingsPage() {
           </fieldset>
         </DisclosureRow>
 
+        <DisclosureRow
+          icon="public"
+          label="Time zone"
+          value={timezone}
+          open={expanded === "tz"}
+          onToggle={() => toggle("tz")}
+        >
+          <div>
+            <label className="label" htmlFor="tz">
+              Timezone
+            </label>
+            <input
+              id="tz"
+              className="input"
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              placeholder="e.g. America/Chicago"
+            />
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={saveProfile}
+            disabled={busy}
+          >
+            Save time zone
+          </button>
+        </DisclosureRow>
+      </SectionCard>
+
+      <SectionCard title="Notifications">
         <ToggleRow
-          icon="alarm"
-          label="Daily reminder"
+          icon="notifications"
+          label="Reading reminders"
           value={notifEnabled ? `${beforeMinutes} min before` : "Off"}
           checked={notifEnabled}
           onChange={setNotifEnabled}
@@ -660,37 +739,6 @@ export default function SettingsPage() {
           </button>
         </ToggleRow>
 
-        <DisclosureRow
-          icon="public"
-          label="Time zone"
-          value={timezone}
-          open={expanded === "tz"}
-          onToggle={() => toggle("tz")}
-        >
-          <div>
-            <label className="label" htmlFor="tz">
-              Timezone
-            </label>
-            <input
-              id="tz"
-              className="input"
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              placeholder="e.g. America/Chicago"
-            />
-          </div>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={saveProfile}
-            disabled={busy}
-          >
-            Save time zone
-          </button>
-        </DisclosureRow>
-      </SectionCard>
-
-      <SectionCard title="Notifications">
         <ToggleRow
           icon="history"
           label="Missed-day catch-up"
@@ -771,7 +819,7 @@ export default function SettingsPage() {
         </DisclosureRow>
       </SectionCard>
 
-      <SectionCard title="Account">
+      <SectionCard title="Account" id="account">
         <DisclosureRow
           icon="manage_accounts"
           label="Manage account"
@@ -816,15 +864,23 @@ export default function SettingsPage() {
         <button
           type="button"
           onClick={signOut}
-          className="w-full h-14 px-4 flex items-center gap-3 text-left hover:bg-verdant-soft/60 transition-colors"
+          className="w-full h-14 px-4 flex items-center justify-between gap-3 text-left hover:bg-danger-soft/40 transition-colors group"
         >
+          <span className="flex items-center gap-3 min-w-0">
+            <span
+              className="material-symbols-outlined text-[20px] text-danger"
+              aria-hidden="true"
+            >
+              logout
+            </span>
+            <span className="text-base text-danger font-medium">Sign out</span>
+          </span>
           <span
-            className="material-symbols-outlined text-[20px] text-sandstone"
+            className="material-symbols-outlined text-[18px] text-danger/60 group-hover:text-danger transition-colors"
             aria-hidden="true"
           >
-            logout
+            chevron_right
           </span>
-          <span className="text-base text-ink">Sign out</span>
         </button>
       </SectionCard>
 
@@ -872,17 +928,15 @@ export default function SettingsPage() {
       </SectionCard>
 
       <footer className="pt-2 pb-4 text-center space-y-1">
-        <p className="text-sm text-ink-muted flex items-center justify-center gap-1.5">
-          <span
-            className="material-symbols-outlined text-[16px] text-verdant"
-            aria-hidden="true"
-          >
-            local_florist
-          </span>
-          Bible Track · v1.0.0
-        </p>
-        <p className="text-sm text-ink-subtle">
-          Dedicated to patient contemplation
+        <span
+          className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-verdant-soft text-verdant mb-2"
+          aria-hidden="true"
+        >
+          <span className="material-symbols-outlined text-[16px]">local_florist</span>
+        </span>
+        <p className="text-sm font-medium text-ink-muted">Bible Track · v1.0.0</p>
+        <p className="text-sm font-semibold uppercase tracking-wide text-ink-subtle">
+          Dedicated to patient contemplation &amp; study
         </p>
       </footer>
 
@@ -891,6 +945,7 @@ export default function SettingsPage() {
         open={plansOpen}
         onClose={() => setPlansOpen(false)}
       />
+      </div>
     </div>
   );
 }

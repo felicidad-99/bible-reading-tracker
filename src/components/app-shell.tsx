@@ -114,37 +114,13 @@ export function AppShell({
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 pb-28 md:pb-0">
-        <header className="md:hidden sticky top-0 z-40 bg-surface-raised/90 backdrop-blur border-b border-line">
-          <div className="flex items-center justify-between px-4 h-14">
-            <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-lg">
-              <span className="w-7 h-7 rounded-lg bg-sandstone-soft flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-ember text-[18px] fill-icon" aria-hidden="true">local_fire_department</span>
-              </span>
-              Bible Track
-            </Link>
-            <button
-              type="button"
-              className="btn btn-ghost text-sm px-3 py-1.5"
-              onClick={() =>
-                setTheme(resolved === "dark" ? "light" : "dark")
-              }
-              aria-label={`Switch to ${resolved === "dark" ? "light" : "dark"} mode`}
-            >
-              <span aria-hidden className="material-symbols-outlined text-[22px]">
-                {mounted && resolved === "dark" ? "light_mode" : "dark_mode"}
-              </span>
-              {mounted ? (resolved === "dark" ? "Light" : "Dark") : "Theme"}
-            </button>
-          </div>
-        </header>
-
-        <main id="main" className="flex-1 w-full max-w-5xl mx-auto px-4 py-6 md:px-8 md:py-10">
+        <main id="main" className="flex-1 w-full max-w-5xl mx-auto px-4 md:px-8">
           {children}
         </main>
       </div>
 
       <nav
-        className="md:hidden fixed bottom-4 inset-x-0 mx-auto max-w-xs z-40 rounded-full px-3 py-2 bg-surface-raised/95 backdrop-blur-md border border-line shadow-md flex justify-around items-center"
+        className="md:hidden fixed bottom-4 inset-x-0 mx-auto max-w-xs z-50 rounded-full px-3 py-2 bg-surface-raised/95 backdrop-blur-md border border-line shadow-md flex justify-around items-center"
         aria-label="Primary"
       >
         {MOBILE_NAV.map((item) => (

@@ -101,7 +101,7 @@ function ReaderInner() {
   const [loadingSession, setLoadingSession] = useState(!!sessionId);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("not_started");
-  const [showControls, setShowControls] = useState(true);
+  const [showControls, setShowControls] = useState(false);
   const [readSet, setReadSet] = useState<Set<string>>(new Set());
   const [latestSessionId, setLatestSessionId] = useState<string | null>(null);
   const [audioInfo, setAudioInfo] = useState<{
@@ -430,59 +430,66 @@ function ReaderInner() {
     );
   }
 
+  const remaining = totalAssigned - readCount;
+  const momentumVerseNum =
+    chapter && chapter.verses.length >= 6
+      ? Math.max(2, Math.floor(chapter.verses.length * 0.45))
+      : -1;
+  const memoryVerseNum =
+    chapter && chapter.verses.length >= 8
+      ? Math.ceil(chapter.verses.length * 0.85)
+      : -1;
+
   return (
-    <div className="max-w-2xl mx-auto">
-      <header className="flex items-center gap-2 sm:gap-3">
-        <Link
-          href="/dashboard"
-          className="btn btn-ghost w-11 h-11 p-0 shrink-0 justify-center"
-          aria-label="Back to Today"
-        >
-          <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
-            arrow_back
-          </span>
-        </Link>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm text-ink-muted truncate">
-            {session
-              ? `Session ${session.sessionNumber} · Day ${session.readingDay.dayNumber}`
-              : "Reader"}
-          </p>
-          <h1 className="text-xl md:text-2xl font-semibold tracking-tight truncate">
+    <div className="max-w-[420px] mx-auto">
+      <header className="sticky top-0 z-40 -mx-4 md:-mx-8 bg-surface/95 backdrop-blur-md border-b border-line">
+        <div className="relative flex items-center justify-between px-4 md:px-8 h-14">
+          <Link
+            href="/dashboard"
+            className="btn btn-ghost w-11 h-11 p-0 shrink-0 justify-center -ml-2"
+            aria-label="Back to Today"
+          >
+            <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+              arrow_back
+            </span>
+          </Link>
+          <h1 className="absolute left-1/2 -translate-x-1/2 max-w-[55%] text-xl font-semibold tracking-tight truncate">
             {chapter
               ? `${chapter.bookName} ${chapter.chapter}`
               : session
                 ? session.chapters[0]?.bookName ?? "Reading"
                 : "Reading"}
           </h1>
+          <div className="flex items-center gap-1.5 shrink-0 -mr-2">
+            <span className="text-sm bg-surface-raised border border-line px-2 py-0.5 rounded-full text-ink-muted select-none">
+              {chapter?.translationId ?? translation}
+            </span>
+            <button
+              type="button"
+              className="btn btn-ghost w-11 h-11 p-0 justify-center"
+              onClick={() => setShowControls((v) => !v)}
+              aria-expanded={showControls}
+              aria-controls="reader-controls"
+              aria-label="Reading display options"
+            >
+              <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                format_size
+              </span>
+            </button>
+          </div>
         </div>
-        <span className="shrink-0 text-sm font-medium bg-surface-sunken px-2.5 py-1 rounded-full">
-          {chapter?.translationId ?? translation}
-        </span>
-        <button
-          type="button"
-          className="btn btn-ghost w-11 h-11 p-0 shrink-0 justify-center"
-          onClick={() => setShowControls((v) => !v)}
-          aria-expanded={showControls}
-          aria-controls="reader-controls"
-          aria-label="Reading display options"
-        >
-          <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
-            format_size
-          </span>
-        </button>
       </header>
 
       {showControls && (
         <div
           id="reader-controls"
-          className="mt-3 flex flex-wrap items-center justify-between gap-3 card px-4 py-3"
+          className="-mx-4 md:-mx-8 px-4 md:px-8 py-2.5 border-b border-line bg-surface-sunken/60 flex flex-wrap items-center justify-between gap-x-3 gap-y-2"
         >
-          <div className="flex items-center gap-3 text-sm text-ink-muted">
-            <span className="tabular-nums">
-              {readCount} of {totalAssigned} chapters read
+          <div className="flex items-center gap-2.5 text-sm text-ink-muted">
+            <span className="tabular-nums whitespace-nowrap">
+              {readCount} of {totalAssigned} read
             </span>
-            <div className="progress-track w-28" aria-hidden>
+            <div className="progress-track w-24" aria-hidden>
               <div
                 className="progress-fill"
                 style={{
@@ -493,32 +500,32 @@ function ReaderInner() {
               />
             </div>
           </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="btn btn-ghost text-sm px-3 py-1.5"
-            onClick={() => setFontSize(Math.max(14, fontSize - 2))}
-            aria-label="Decrease font size"
-          >
-            A−
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost text-sm px-3 py-1.5"
-            onClick={() => setFontSize(Math.min(28, fontSize + 2))}
-            aria-label="Increase font size"
-          >
-            A+
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost text-sm px-3 py-1.5"
-            onClick={toggleVerses}
-            aria-pressed={showVerses}
-          >
-            {showVerses ? "Verses on" : "Verses off"}
-          </button>
-        </div>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              className="btn btn-ghost text-sm px-2.5 py-1 min-h-9 min-w-9"
+              onClick={() => setFontSize(Math.max(14, fontSize - 2))}
+              aria-label="Decrease font size"
+            >
+              A−
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost text-sm px-2.5 py-1 min-h-9 min-w-9"
+              onClick={() => setFontSize(Math.min(28, fontSize + 2))}
+              aria-label="Increase font size"
+            >
+              A+
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost text-sm px-2.5 py-1 min-h-9"
+              onClick={toggleVerses}
+              aria-pressed={showVerses}
+            >
+              {showVerses ? "Verses on" : "Verses off"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -540,157 +547,261 @@ function ReaderInner() {
         </p>
       )}
 
-      <article
-        className="mt-6 card p-6 md:p-10"
-        style={{ fontSize: `${fontSize}px`, lineHeight: 1.75 }}
-      >
-        {loadingChapter && (
-          <div aria-busy="true" className="space-y-3">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-4 bg-surface-sunken rounded animate-pulse"
-                style={{ width: `${90 - (i % 3) * 15}%` }}
-              />
-            ))}
-            <span className="sr-only">Loading chapter</span>
-          </div>
-        )}
+      <main className="pt-7 pb-64 px-2">
+        <div className="text-center mb-7">
+          <span className="block text-sm font-semibold uppercase tracking-[0.2em] text-ink-muted">
+            {chapter ? `Chapter ${chapter.chapter}` : "Chapter"}
+          </span>
+          <div className="w-12 h-px bg-line mx-auto mt-2.5" aria-hidden="true" />
+        </div>
 
-        {!loadingChapter && chapter && (
-          <div className="font-scripture">
-            <p className="text-sm font-sans text-ink-muted mb-6 tracking-[0.2em] uppercase">
-              Chapter {chapter.chapter}
-            </p>
-            <div className="space-y-4">
-              {chapter.verses.map((v) => (
-                <p
-                  key={v.number}
-                  className={
-                    activeVerse === v.number
-                      ? "text-ink rounded-md bg-accent-soft px-1 -mx-1"
-                      : "text-ink"
-                  }
-                >
-                  {showVerses && (
-                    <sup className="text-accent-ink font-sans text-[0.7em] mr-1 tabular-nums">
+        <article
+          className="font-scripture text-ink"
+          style={{ fontSize: `${fontSize}px`, lineHeight: 1.65 }}
+        >
+          {loadingChapter && (
+            <div aria-busy="true" className="space-y-3">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-4 bg-surface-sunken rounded animate-pulse"
+                  style={{ width: `${90 - (i % 3) * 15}%` }}
+                />
+              ))}
+              <span className="sr-only">Loading chapter</span>
+            </div>
+          )}
+
+          {!loadingChapter && chapter && (
+            <>
+              <div className="space-y-4">
+                {chapter.verses.map((v) => {
+                  const sup = showVerses ? (
+                    <sup className="text-sandstone font-medium text-[0.7em] pr-1.5 align-super font-sans tabular-nums select-none">
                       {v.number}
                     </sup>
-                  )}
-                  {v.text}
-                </p>
-              ))}
-              {chapter.verses.length === 0 && (
-                <p className="text-ink-muted font-sans text-sm">
-                  No text returned for this chapter. Try another translation or retry.
+                  ) : null;
+                  const highlight =
+                    activeVerse === v.number
+                      ? "text-ink rounded-md bg-accent-soft px-1 -mx-1"
+                      : "text-ink";
+
+                  return (
+                    <div key={v.number}>
+                      {v.number === memoryVerseNum ? (
+                        <div className="my-6 bg-surface-sunken border-l-[3px] border-ember rounded-r-lg p-4 shadow-sm">
+                          <div className="flex items-center gap-1.5 mb-1.5 text-accent-ink font-sans">
+                            <span
+                              className="material-symbols-outlined text-[16px] fill-icon"
+                              aria-hidden="true"
+                            >
+                              bookmark
+                            </span>
+                            <span className="text-sm font-semibold uppercase tracking-wider">
+                              Saved to Memory Verse
+                            </span>
+                          </div>
+                          <p className="text-ink" style={{ lineHeight: 1.65 }}>
+                            {sup}
+                            {v.text}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className={`relative ${highlight}`}>
+                          {sup}
+                          {v.text}
+                        </p>
+                      )}
+
+                      {v.number === momentumVerseNum && totalAssigned > 0 && (
+                        <aside className="my-7 bg-verdant-soft border border-line rounded-xl p-4 font-sans">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="w-2 h-2 rounded-full bg-verdant shrink-0"
+                                aria-hidden="true"
+                              />
+                              <span className="text-sm font-semibold text-verdant uppercase tracking-wider">
+                                Habit Momentum
+                              </span>
+                            </div>
+                            <span className="text-sm text-ink-muted whitespace-nowrap tabular-nums">
+                              {remaining > 0 ? `${remaining * 3}m left` : "Done"}
+                            </span>
+                          </div>
+                          <h2 className="text-[18px] font-semibold text-ink font-sans mt-2 mb-1">
+                            {remaining > 0
+                              ? `You are ${remaining} chapter${remaining === 1 ? "" : "s"} from finishing this session`
+                              : "You've finished every chapter in this session"}
+                          </h2>
+                          <p className="text-sm text-ink-muted mb-3">
+                            {session
+                              ? `Session goal: ${totalAssigned} chapters · ${
+                                  SESSION_NAMES[session.sessionNumber - 1] ?? "Daily"
+                                } session`
+                              : `Daily goal: ${totalAssigned} chapters`}
+                          </p>
+                          <div
+                            className="w-full h-1 bg-line rounded-full overflow-hidden"
+                            aria-hidden="true"
+                          >
+                            <div
+                              className="bg-verdant h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${
+                                  totalAssigned
+                                    ? Math.round((readCount / totalAssigned) * 100)
+                                    : 0
+                                }%`,
+                              }}
+                            />
+                          </div>
+                        </aside>
+                      )}
+                    </div>
+                  );
+                })}
+                {chapter.verses.length === 0 && (
+                  <p className="text-ink-muted text-sm">
+                    No text returned for this chapter. Try another translation or retry.
+                  </p>
+                )}
+              </div>
+              {chapter.copyright && (
+                <p className="mt-8 pt-4 border-t border-line text-sm font-sans text-ink-muted">
+                  {chapter.copyright}
                 </p>
               )}
-            </div>
-            {chapter.copyright && (
-              <p className="mt-8 pt-4 border-t border-line text-sm font-sans text-ink-muted">
-                {chapter.copyright}
-              </p>
-            )}
-          </div>
-        )}
-      </article>
-
-      <nav
-        className="mt-6 flex gap-3"
-        aria-label="Chapter navigation"
-      >
-        <button
-          type="button"
-          className="btn btn-secondary flex-1"
-          disabled={!canPrev || !current}
-          onClick={() => {
-            if (!current) return;
-            const p = prevChapterRef(current.bookId, current.chapter);
-            if (p) setCurrent(p);
-          }}
-        >
-          Previous
-        </button>
-
-        <button
-          type="button"
-          className="btn btn-secondary flex-1"
-          disabled={!canNext || !current}
-          onClick={() => {
-            if (!current) return;
-            const n = nextChapterRef(current.bookId, current.chapter);
-            if (n) setCurrent(n);
-          }}
-        >
-          Next
-        </button>
-      </nav>
-
-      {error && chapter && (
-        <p role="alert" className="mt-4 text-sm text-danger">
-          {error}
-        </p>
-      )}
-
-      <div className="mt-6 text-center">
-        <button
-          type="button"
-          className="btn btn-ghost text-sm"
-          onClick={() => setCurrent({ bookId: "GEN", chapter: 1 })}
-        >
-          Jump to Genesis 1
-        </button>
-      </div>
-
-      <div className="sticky bottom-24 md:bottom-6 z-10 mt-4 card p-4 flex flex-wrap items-center justify-between gap-3 shadow-lg">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold uppercase tracking-wide">
-            Session {session?.sessionNumber ?? "—"}
-            {session ? ` — ${SESSION_NAMES[session.sessionNumber - 1] ?? ""}` : ""}
-          </p>
-          <p className="text-sm text-ink-muted tabular-nums mt-0.5">
-            {session
-              ? session.chapters
-                  .map((c) =>
-                    c.start === c.end
-                      ? `${c.bookName} ${c.start}`
-                      : `${c.bookName} ${c.start}-${c.end}`
-                  )
-                  .join(", ")
-              : ""}
-            {session ? ` · ${readCount} of ${totalAssigned} chapters read` : ""}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {status === "completed" ? (
-            <span className="status-pill status-completed">Session complete</span>
-          ) : (
-            <>
-              {status === "not_started" && (
-                <button
-                  type="button"
-                  className="btn btn-ghost text-sm"
-                  onClick={startSession}
-                >
-                  Mark as started
-                </button>
-              )}
-              <button
-                type="button"
-                className="btn btn-primary text-sm flex-1 sm:flex-none"
-                onClick={completeSession}
-              >
-                <span
-                  className="material-symbols-outlined text-[18px]"
-                  aria-hidden="true"
-                >
-                  check_circle
-                </span>
-                Mark session complete
-              </button>
             </>
           )}
-          <Link href="/dashboard" className="btn btn-secondary text-sm">
+        </article>
+
+        {error && chapter && (
+          <p role="alert" className="mt-4 text-sm text-danger">
+            {error}
+          </p>
+        )}
+
+        <nav className="mt-6 flex justify-between" aria-label="Chapter navigation">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            disabled={!canPrev || !current}
+            onClick={() => {
+              if (!current) return;
+              const p = prevChapterRef(current.bookId, current.chapter);
+              if (p) setCurrent(p);
+            }}
+          >
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+              chevron_left
+            </span>
+            Previous
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-ghost"
+            disabled={!canNext || !current}
+            onClick={() => {
+              if (!current) return;
+              const n = nextChapterRef(current.bookId, current.chapter);
+              if (n) setCurrent(n);
+            }}
+          >
+            Next
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+              chevron_right
+            </span>
+          </button>
+        </nav>
+
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            className="btn btn-ghost text-sm"
+            onClick={() => setCurrent({ bookId: "GEN", chapter: 1 })}
+          >
+            Jump to Genesis 1
+          </button>
+        </div>
+      </main>
+
+      <div className="fixed bottom-20 left-0 right-0 max-w-[420px] mx-auto z-40 bg-surface-raised/95 backdrop-blur-md border-t border-b border-line rounded-2xl shadow-[0_-4px_20px_rgba(77,72,69,0.06)] px-5 pt-3.5 pb-4">
+        <div className="w-8 h-1 bg-line rounded-full mx-auto mb-3" aria-hidden="true" />
+        <div className="flex items-center justify-between gap-3 mb-3 px-0.5">
+          <div className="min-w-0">
+            <span className="block text-sm font-semibold uppercase tracking-widest text-ink-muted truncate">
+              {session
+                ? `Session ${session.sessionNumber}${
+                    SESSION_NAMES[session.sessionNumber - 1]
+                      ? ` · ${SESSION_NAMES[session.sessionNumber - 1]}`
+                      : ""
+                  }`
+                : "Session"}
+            </span>
+            <span className="block text-sm font-semibold text-ink truncate tabular-nums">
+              {session
+                ? `${session.chapters
+                    .map((c) =>
+                      c.start === c.end
+                        ? `${c.bookName} ${c.start}`
+                        : `${c.bookName} ${c.start}-${c.end}`
+                    )
+                    .join(", ")} of ${totalAssigned}`
+                : `${readCount} of ${totalAssigned} chapters`}
+            </span>
+          </div>
+          {status === "completed" ? (
+            <span className="status-pill status-completed shrink-0">
+              <span className="material-symbols-outlined text-[15px] fill-icon" aria-hidden="true">
+                check_circle
+              </span>
+              Complete
+            </span>
+          ) : readCount > 0 ? (
+            <span className="inline-flex shrink-0 items-center gap-1 text-verdant bg-verdant-soft px-2 py-0.5 rounded-full text-sm font-medium">
+              <span className="material-symbols-outlined text-[15px] fill-icon" aria-hidden="true">
+                check_circle
+              </span>
+              On track
+            </span>
+          ) : (
+            <span className="status-pill status-not-started shrink-0">Not started</span>
+          )}
+        </div>
+
+        {status === "completed" ? (
+          <div className="text-center py-2 text-sm font-medium text-verdant">
+            Session complete — well done.
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="btn btn-primary w-full"
+            onClick={completeSession}
+          >
+            Mark session complete
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+              check
+            </span>
+          </button>
+        )}
+
+        <div className="mt-2 flex items-center justify-center gap-5">
+          {status === "not_started" && (
+            <button
+              type="button"
+              className="text-sm text-ink-muted hover:text-ink transition-colors py-1"
+              onClick={startSession}
+            >
+              Mark as started
+            </button>
+          )}
+          <Link
+            href="/dashboard"
+            className="text-sm text-ink-muted hover:text-ink transition-colors py-1"
+          >
             Skip for now
           </Link>
         </div>

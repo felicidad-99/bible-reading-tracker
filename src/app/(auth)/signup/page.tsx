@@ -11,7 +11,7 @@ export default function SignUpPage() {
       <AuthForm mode="signup" />
 
       <div
-        className="relative flex items-center justify-center my-4"
+        className="relative flex items-center justify-center my-3.5"
         aria-hidden="true"
       >
         <div className="w-full border-t border-line" />

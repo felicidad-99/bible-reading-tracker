@@ -68,6 +68,7 @@ interface PlanInfo {
 
 const SESSION_NAMES = ["Morning", "Afternoon", "Evening"];
 const WEEK_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
+const RING_CIRCUMFERENCE = 427.25;
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
@@ -146,7 +147,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4" aria-busy="true">
+      <div className="pt-5 space-y-4" aria-busy="true">
         <div className="h-8 w-48 bg-surface-sunken rounded animate-pulse" />
         <div className="h-44 card" />
         <div className="h-32 card" />
@@ -195,7 +196,12 @@ export default function DashboardPage() {
   const allTodayDone =
     todaySessions.length > 0 && todaySessions.every((s) => s.status === "completed");
   const hasMissed = stats.missedCount > 0;
-  const firstName = userName?.trim().split(/\s+/)[0] ?? null;
+  const nameParts = userName?.trim().split(/\s+/) ?? [];
+  const initials =
+    nameParts.length >= 2
+      ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase()
+      : nameParts[0]?.[0]?.toUpperCase() ?? null;
+  const firstName = nameParts[0] ?? null;
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
@@ -225,233 +231,304 @@ export default function DashboardPage() {
     readingChapters.length > 0
       ? readingChapters.map(formatChapterRange).join(" & ")
       : null;
+  const percent = Math.min(100, Math.max(0, Math.round(stats.percent)));
+  const ringOffset = RING_CIRCUMFERENCE * (1 - percent / 100);
 
   return (
-    <div className="space-y-6">
-      <header className="fade-up">
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
-          {firstName ? `${greeting}, ${firstName}` : greeting}
-        </h1>
-        <p className="mt-1 text-ink-muted">{dateLine}</p>
+    <div className="mx-auto w-full max-w-2xl lg:max-w-3xl">
+      <header className="pt-5 pb-4 flex items-center justify-between fade-up">
+        <div>
+          <h1 className="text-2xl font-medium tracking-tight">
+            {firstName ? `${greeting}, ${firstName}` : greeting}
+          </h1>
+          <p className="mt-0.5 text-sm text-ink-muted">{dateLine}</p>
+        </div>
+        <Link
+          href="/settings"
+          className="w-10 h-10 rounded-full bg-surface-raised border border-line flex items-center justify-center text-ink-muted hover:bg-surface-sunken hover:text-ink transition-colors duration-150 active:scale-95 shadow-sm shrink-0"
+          aria-label={initials ? `Profile of ${userName}` : "Open profile"}
+        >
+          {initials ? (
+            <span className="text-sm font-semibold tracking-wide">{initials}</span>
+          ) : (
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+              person
+            </span>
+          )}
+        </Link>
       </header>
 
-      <section
-        className="card p-5 md:p-6 fade-up"
-        aria-labelledby="today-heading"
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 text-sm font-semibold bg-ember-soft text-accent-ink px-3 py-1 rounded-full tabular-nums">
-            Day {stats.currentDay} of {stats.totalDays}
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-sm font-medium bg-surface-sunken px-3 py-1 rounded-full tabular-nums">
-            <span
-              className="material-symbols-outlined text-[16px] text-ember fill-icon"
-              aria-hidden="true"
-            >
-              local_fire_department
+      <div className="space-y-4">
+        <section
+          className="card p-5 flex flex-col items-center text-center fade-up"
+          aria-labelledby="today-heading"
+        >
+          <div className="w-full flex items-center justify-between pb-2.5">
+            <span className="eyebrow text-sandstone">
+              Day {stats.currentDay} of {stats.totalDays}
             </span>
-            {stats.currentStreak} day streak
-          </span>
-        </div>
-
-        <div className="mt-5 flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-sm text-ink-muted" id="today-heading">
-              {planLabel}
-            </p>
-            {readingLabel ? (
-              <p className="mt-1 text-xl md:text-2xl font-semibold tracking-tight">
-                {readingLabel}
-              </p>
-            ) : (
-              <p className="mt-1 text-xl md:text-2xl font-semibold tracking-tight">
-                Plan complete
-              </p>
-            )}
-            <p className="mt-1 text-sm text-ink-muted tabular-nums">
-              {allTodayDone && todaySessions.length > 0
-                ? "All caught up today · next reading tomorrow"
-                : readingLabel
-                  ? `${readingCount} chapters · ~${readingCount * 3} min`
-                  : "Every scheduled reading is finished."}
-            </p>
-          </div>
-          <div className="shrink-0 text-right">
-            <span className="text-3xl md:text-4xl font-semibold tracking-tight tabular-nums">
-              {Math.round(stats.percent)}
-            </span>
-            <span className="ml-1 text-sm font-semibold text-accent-ink">
-              % Done
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-5 flex flex-wrap gap-3">
-          {ctaHref ? (
-            <Link href={ctaHref} className="btn btn-primary">
-              Continue reading
-              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-                arrow_forward
-              </span>
-            </Link>
-          ) : (
-            <Link href="/calendar" className="btn btn-secondary">
-              Open calendar
-            </Link>
-          )}
-        </div>
-      </section>
-
-      {todaySessions.length > 0 && (
-        <section className="fade-up" aria-labelledby="sessions-heading">
-          <h2 id="sessions-heading" className="text-lg font-semibold tracking-tight">
-            Today&apos;s reading
-          </h2>
-          <ul className="mt-3 space-y-3">
-            {todaySessions.map((session) => (
-              <li key={session.id}>
-                <SessionCard session={session} onComplete={load} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <section className="grid gap-4 sm:grid-cols-2 fade-up fade-up-delay-1">
-        <div className="card p-5 flex items-center gap-4">
-          <span className="w-11 h-11 rounded-xl bg-ember-soft flex items-center justify-center shrink-0">
-            <span
-              className="material-symbols-outlined text-[22px] text-accent-ink"
-              aria-hidden="true"
-            >
-              history
-            </span>
-          </span>
-          <div className="min-w-0">
-            <p className="text-sm text-ink-muted">Current</p>
-            <p className="text-xl font-semibold tracking-tight tabular-nums">
-              {stats.currentStreak} day streak
-            </p>
-          </div>
-        </div>
-        <div className="card p-5 flex items-center gap-4">
-          <span className="w-11 h-11 rounded-xl bg-verdant-soft flex items-center justify-center shrink-0">
-            <span
-              className="material-symbols-outlined text-[22px] text-verdant"
-              aria-hidden="true"
-            >
-              auto_stories
-            </span>
-          </span>
-          <div className="min-w-0">
-            <p className="text-sm text-ink-muted">Total</p>
-            <p className="text-xl font-semibold tracking-tight tabular-nums">
-              {stats.completedChapters.toLocaleString()} chapters read
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section
-        className="card p-5 fade-up fade-up-delay-2"
-        aria-labelledby="week-heading"
-      >
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 id="week-heading" className="font-semibold tracking-tight">
-            This week&apos;s rhythm
-          </h2>
-          <span className="text-sm text-ink-muted tabular-nums">
-            {stats.weekDone} of {stats.weekTarget} target
-          </span>
-        </div>
-        <ol className="mt-4 grid grid-cols-7 gap-1.5 sm:gap-2">
-          {stats.week.map((day, i) => {
-            const dayNum = day.date.slice(8, 10).replace(/^0/, "");
-            const circle =
-              day.status === "completed"
-                ? "bg-ember-soft text-accent-ink ring-1 ring-ember/40"
-                : day.date === stats.todayDay?.date
-                  ? "bg-surface-raised text-accent-ink ring-2 ring-accent-ink font-semibold"
-                  : day.status === "missed"
-                    ? "bg-sandstone-soft text-sandstone"
-                    : "bg-surface-sunken text-ink-muted";
-            return (
-              <li
-                key={day.date}
-                className="flex flex-col items-center gap-1.5"
-                aria-label={`${day.date}: ${day.status}`}
+            <span className="inline-flex items-center text-ink-muted text-sm font-medium">
+              <span
+                className="material-symbols-outlined text-[16px] mr-1 text-sandstone fill-icon"
+                aria-hidden="true"
               >
-                <span className="text-sm text-ink-muted" aria-hidden="true">
-                  {WEEK_LABELS[i]}
+                local_fire_department
+              </span>
+              Day Streak {stats.currentStreak}
+            </span>
+          </div>
+
+          <h2 id="today-heading" className="w-full text-left text-xl font-medium mb-3">
+            {planLabel}
+          </h2>
+
+          <div className="w-full flex items-center gap-2">
+            <div
+              className="relative w-28 h-28 shrink-0 flex items-center justify-center"
+              role="progressbar"
+              aria-valuenow={percent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Plan progress"
+            >
+              <svg className="w-28 h-28 -rotate-90" viewBox="0 0 160 160" aria-hidden="true">
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="68"
+                  fill="transparent"
+                  strokeWidth="10"
+                  className="stroke-surface-sunken"
+                />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="68"
+                  fill="transparent"
+                  strokeWidth="10"
+                  strokeDasharray={RING_CIRCUMFERENCE}
+                  strokeDashoffset={ringOffset}
+                  strokeLinecap="round"
+                  className="stroke-ember transition-all duration-700 ease-out"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-1">
+                <span className="text-2xl font-semibold tracking-tight leading-none tabular-nums">
+                  {percent}
+                  <span className="text-sm font-normal text-ink-muted ml-0.5">%</span>
                 </span>
+                <span className="text-sm font-semibold text-ink-muted uppercase tracking-wider mt-0.5">
+                  Done
+                </span>
+              </div>
+            </div>
+
+            <div className="flex-1 min-w-0 flex flex-col items-start justify-center text-left pl-1">
+              <div className="text-[18px] font-semibold tracking-tight leading-snug">
+                {readingLabel ?? "Plan complete"}
+              </div>
+              <div className="flex items-center gap-1.5 mt-1 text-ink-muted text-sm">
+                {readingLabel ? (
+                  <>
+                    <span className="tabular-nums">
+                      {allTodayDone && todaySessions.length > 0
+                        ? "All done today"
+                        : `${readingCount} chapters`}
+                    </span>
+                    {!allTodayDone && (
+                      <>
+                        <span className="w-1 h-1 rounded-full bg-line inline-block" aria-hidden="true" />
+                        <span className="tabular-nums">~{readingCount * 3} min</span>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <span>Every scheduled reading is finished.</span>
+                )}
+              </div>
+              <div className="w-full mt-3">
+                {ctaHref ? (
+                  <Link href={ctaHref} className="btn btn-primary w-full">
+                    Continue reading
+                    <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                      arrow_forward
+                    </span>
+                  </Link>
+                ) : (
+                  <Link href="/calendar" className="btn btn-secondary w-full">
+                    Open calendar
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {todaySessions.length > 1 && (
+          <section className="fade-up" aria-labelledby="sessions-heading">
+            <h2 id="sessions-heading" className="eyebrow">
+              Today&apos;s reading
+            </h2>
+            <ul className="mt-3 space-y-2">
+              {todaySessions.map((session) => (
+                <li key={session.id}>
+                  <SessionCard session={session} onComplete={load} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <section className="flex flex-col gap-2 md:flex-row md:items-start fade-up fade-up-delay-1">
+          <div className="grid grid-cols-2 gap-2 md:flex-1">
+            <div className="card p-4 flex flex-col justify-between">
+              <div className="flex items-center justify-between">
                 <span
-                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${circle}`}
+                  className="material-symbols-outlined text-[20px] text-ember fill-icon"
                   aria-hidden="true"
                 >
-                  {day.status === "completed" ? (
-                    <span className="material-symbols-outlined text-[18px] fill-icon">
-                      check
-                    </span>
-                  ) : day.status === "missed" ? (
-                    <span className="material-symbols-outlined text-[18px]">
-                      history_toggle_off
-                    </span>
-                  ) : (
-                    <span className="text-sm tabular-nums">{dayNum}</span>
-                  )}
+                  local_fire_department
                 </span>
-              </li>
-            );
-          })}
-        </ol>
-      </section>
+                <span className="px-2 py-0.5 rounded-full bg-surface-sunken text-accent-ink text-sm font-semibold uppercase tracking-wide">
+                  Current
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-3xl font-semibold leading-tight tabular-nums">
+                  {stats.currentStreak}
+                </div>
+                <div className="text-sm text-ink-muted mt-0.5">day streak</div>
+              </div>
+            </div>
+            <div className="card p-4 flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span
+                  className="material-symbols-outlined text-[20px] text-verdant"
+                  aria-hidden="true"
+                >
+                  auto_stories
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-verdant-soft text-verdant text-sm font-semibold uppercase tracking-wide">
+                  Total
+                </span>
+              </div>
+              <div className="mt-3">
+                <div className="text-3xl font-semibold leading-tight tabular-nums">
+                  {stats.completedChapters.toLocaleString()}
+                </div>
+                <div className="text-sm text-ink-muted mt-0.5">chapters read</div>
+              </div>
+            </div>
+          </div>
 
-      {hasMissed && (
-        <div className="card p-5 fade-up fade-up-delay-3" role="status">
-          <div className="flex gap-3">
-            <span className="w-10 h-10 rounded-xl bg-surface-sunken flex items-center justify-center shrink-0">
+          <section className="card px-4 py-3 md:flex-1" aria-labelledby="week-heading">
+            <div className="flex items-center justify-between mb-2.5">
+              <h2 id="week-heading" className="text-sm font-medium text-ink-muted">
+                This week&apos;s rhythm
+              </h2>
+              <span className="text-sm font-medium text-verdant tabular-nums">
+                {stats.weekDone} of {stats.weekTarget} target
+              </span>
+            </div>
+            <ol className="flex items-center justify-between pt-1">
+              {stats.week.map((day, i) => {
+                const isToday = day.date === stats.todayDay?.date;
+                const stateLabel =
+                  day.status === "completed"
+                    ? "completed"
+                    : day.status === "missed"
+                      ? "missed"
+                      : isToday
+                        ? "today"
+                        : "upcoming";
+                return (
+                  <li
+                    key={day.date}
+                    className="flex flex-col items-center gap-1.5"
+                    aria-label={`${day.date}: ${stateLabel}`}
+                  >
+                    <span
+                      className={`text-sm font-medium ${
+                        isToday && day.status !== "completed"
+                          ? "text-accent-ink font-semibold"
+                          : "text-ink-muted"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {WEEK_LABELS[i]}
+                    </span>
+                    <span aria-hidden="true">
+                      {day.status === "completed" ? (
+                        <span className="w-7 h-7 rounded-full bg-verdant text-surface flex items-center justify-center shadow-sm">
+                          <span className="material-symbols-outlined text-[15px]">check</span>
+                        </span>
+                      ) : day.status === "missed" ? (
+                        <span className="w-7 h-7 rounded-full bg-sandstone-soft flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[14px] text-sandstone">
+                            history_toggle_off
+                          </span>
+                        </span>
+                      ) : isToday ? (
+                        <span className="w-7 h-7 rounded-full border-2 border-ember bg-surface-sunken flex items-center justify-center">
+                          <span className="w-2.5 h-2.5 rounded-full bg-ember animate-pulse" />
+                        </span>
+                      ) : (
+                        <span className="w-7 h-7 rounded-full border border-line bg-surface-raised flex items-center justify-center" />
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        </section>
+
+        {hasMissed && (
+          <section
+            className="bg-surface-sunken rounded-lg border border-line p-3.5 flex flex-wrap items-center justify-between fade-up fade-up-delay-2"
+            role="status"
+          >
+            <div className="flex items-start gap-2.5 pr-2">
               <span
-                className="material-symbols-outlined text-[20px] text-ink-muted"
+                className="material-symbols-outlined text-[20px] text-sandstone mt-0.5"
                 aria-hidden="true"
               >
                 history_toggle_off
               </span>
-            </span>
-            <div className="min-w-0">
-              <p className="font-medium">Missed a day?</p>
-              <p className="text-sm text-ink-muted mt-0.5">
-                Your history is preserved. Read at your own peaceful pace
-                without penalty.
-              </p>
+              <div>
+                <p className="text-sm font-medium leading-snug text-ink">
+                  Missed a day? Your history is preserved.
+                </p>
+                <p className="text-sm text-ink-muted mt-0.5">
+                  Read at your own peaceful pace without penalty.
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link href="/calendar" className="btn btn-secondary text-sm">
-              View calendar
-            </Link>
             <button
               type="button"
-              className="btn btn-primary text-sm"
+              className="shrink-0 flex items-center gap-1 text-sm font-medium text-accent-ink hover:underline py-1 pl-2"
               onClick={runCatchUp}
               disabled={busy}
             >
               {busy ? "Working…" : "Catch up"}
-              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
                 chevron_right
               </span>
             </button>
-          </div>
-          {catchUpMsg && (
-            <p className="mt-3 text-sm text-accent-ink" role="status">
-              {catchUpMsg}
-            </p>
-          )}
+            {catchUpMsg && (
+              <p className="w-full mt-2 text-sm text-accent-ink" role="status">
+                {catchUpMsg}
+              </p>
+            )}
+          </section>
+        )}
+
+        <div className="fade-up fade-up-delay-3">
+          <GroupsSection variant="preview" />
         </div>
-      )}
 
-      <PushPromptCard />
-
-      <GroupsSection variant="preview" />
+        <PushPromptCard />
+      </div>
     </div>
   );
 }
@@ -490,7 +567,7 @@ function SessionCard({
   }
 
   return (
-    <div className="card p-5 flex flex-wrap items-center justify-between gap-4">
+    <div className="card p-4 flex flex-wrap items-center justify-between gap-3">
       <div className="min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold">{label}</span>

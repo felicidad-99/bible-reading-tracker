@@ -31,7 +31,8 @@ interface MonthCell {
   inMonth: boolean;
 }
 
-const WEEKDAY_LABELS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+const SESSION_NAMES = ["Morning", "Afternoon", "Evening"];
+const WEEKDAY_LABELS = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
 const MONTHS = [
   "January",
   "February",
@@ -125,13 +126,18 @@ export default function CalendarPage() {
     const startDow = (first.getUTCDay() + 6) % 7;
     const daysInMonth = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
     const out: MonthCell[] = [];
-    for (let i = 0; i < startDow; i++) out.push({ iso: null, day: null, inMonth: false });
+    for (let i = startDow; i > 0; i--) {
+      const d = new Date(Date.UTC(y, m, 1 - i));
+      out.push({ iso: d.toISOString().slice(0, 10), day: null, inMonth: false });
+    }
     for (let d = 1; d <= daysInMonth; d++) {
       const iso = `${y}-${pad(m + 1)}-${pad(d)}`;
       out.push({ iso, day: dayByIso.get(iso) ?? null, inMonth: true });
     }
+    let trail = 1;
     while (out.length % 7 !== 0) {
-      out.push({ iso: null, day: null, inMonth: false });
+      const d = new Date(Date.UTC(y, m + 1, trail++));
+      out.push({ iso: d.toISOString().slice(0, 10), day: null, inMonth: false });
     }
     return out;
   }, [viewMonth, dayByIso]);
@@ -200,98 +206,277 @@ export default function CalendarPage() {
   const nextOpen = selected?.sessions.find((s) => s.status !== "completed") ?? null;
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3 fade-up">
-        <div>
-          <p className="eyebrow">Reading log</p>
-          <h1 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight">
-            {viewMonth ? `${MONTHS[viewMonth.m]} ${viewMonth.y}` : "Calendar"}
-          </h1>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <button type="button" className="btn btn-secondary text-sm" onClick={goToday}>
-            Today
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost w-11 h-11 p-0 justify-center"
-            onClick={() => shiftMonth(-1)}
-            aria-label="Previous month"
-          >
-            <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
-              chevron_left
+    <div className="max-w-md mx-auto lg:max-w-4xl">
+      <div className="-mx-4 md:-mx-8 border-b border-line">
+        <div className="flex justify-between items-center px-4 md:px-8 py-2">
+          <div className="flex items-center gap-3">
+            <span
+              className="w-8 h-8 rounded-full bg-surface-sunken border border-line flex items-center justify-center text-ink-muted overflow-hidden"
+              aria-hidden="true"
+            >
+              <span className="material-symbols-outlined text-[20px]">account_circle</span>
             </span>
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost w-11 h-11 p-0 justify-center"
-            onClick={() => shiftMonth(1)}
-            aria-label="Next month"
+            <span className="text-xl font-medium tracking-tight">Bible Track</span>
+          </div>
+          <Link
+            href="/settings"
+            className="w-11 h-11 -mr-1.5 rounded-full flex items-center justify-center text-ink-muted hover:bg-surface-sunken hover:text-ink transition-colors duration-150"
+            aria-label="Notification settings"
           >
-            <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
-              chevron_right
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+              notifications
             </span>
-          </button>
+          </Link>
         </div>
-      </header>
-
-      <div className="flex flex-wrap items-center justify-between gap-3 card px-4 py-3 fade-up">
-        <span className="text-sm font-medium tabular-nums">
-          {monthSummary.completed} of {monthSummary.total} days completed
-        </span>
-        <span className="inline-flex items-center gap-1.5 text-sm font-medium bg-ember-soft text-accent-ink px-3 py-1 rounded-full tabular-nums">
-          <span
-            className="material-symbols-outlined text-[16px] fill-icon"
-            aria-hidden="true"
-          >
-            local_fire_department
-          </span>
-          {currentStreak} day streak
-        </span>
       </div>
 
-      <div className="grid lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-3">
-          <section className="card p-3 sm:p-5" aria-label="Month grid">
-            <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-1">
+      <div className="pt-4 space-y-4">
+        <section className="space-y-2 fade-up">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="eyebrow">Reading log</p>
+              <h1 className="text-2xl font-medium tracking-tight truncate">
+                {viewMonth ? `${MONTHS[viewMonth.m]} ${viewMonth.y}` : "Calendar"}
+              </h1>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                className="min-h-11 px-3 rounded-lg text-sm font-medium text-accent-ink hover:bg-surface-sunken transition-colors duration-150"
+                onClick={goToday}
+              >
+                Today
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost w-11 h-11 p-0 justify-center"
+                onClick={() => shiftMonth(-1)}
+                aria-label="Previous month"
+              >
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                  chevron_left
+                </span>
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost w-11 h-11 p-0 justify-center"
+                onClick={() => shiftMonth(1)}
+                aria-label="Next month"
+              >
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                  chevron_right
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div className="card px-4 py-2.5 flex items-center justify-between gap-3 text-sm">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-verdant shrink-0" aria-hidden="true" />
+              <span className="font-medium text-ink tabular-nums whitespace-nowrap">
+                {monthSummary.completed} of {monthSummary.total} days
+              </span>
+              <span className="text-ink-muted">completed</span>
+            </div>
+            <div className="h-3 w-px bg-line shrink-0" aria-hidden="true" />
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span
+                className="material-symbols-outlined text-[16px] text-ember fill-icon"
+                aria-hidden="true"
+              >
+                local_fire_department
+              </span>
+              <span className="text-sm font-semibold tabular-nums">
+                {currentStreak} day streak
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <div className="lg:grid lg:grid-cols-5 lg:gap-6">
+          <aside
+            className="order-first lg:order-none lg:col-span-2 scroll-mt-20"
+            ref={detailRef}
+          >
+            {selected ? (
+              <div className="card p-4 lg:sticky lg:top-6 space-y-4 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="eyebrow">
+                      Day {selected.dayNumber} · {formatDayDetail(selected.date)}
+                    </p>
+                    <h2 className="text-lg font-semibold">Daily Passage</h2>
+                  </div>
+                  <span className="bg-sandstone-soft text-sandstone border border-line px-2.5 py-1 rounded-full text-sm font-medium max-w-[45%] truncate">
+                    {planLabel}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex justify-between gap-3 text-sm">
+                    <span className="text-ink-muted tabular-nums">
+                      {planPercent}% of plan complete
+                    </span>
+                    <span className="text-verdant font-semibold tabular-nums">
+                      {selected.completedChapters} of {selected.totalChapters} chapters
+                    </span>
+                  </div>
+                  <div
+                    className="h-1.5 w-full bg-line rounded-full overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={planPercent}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label="Plan progress"
+                  >
+                    <div
+                      className="h-full bg-verdant rounded-full transition-all duration-500"
+                      style={{
+                        width: `${
+                          selected.totalChapters
+                            ? Math.round(
+                                (selected.completedChapters / selected.totalChapters) * 100
+                              )
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <ul className="divide-y divide-line">
+                  {selected.sessions.map((s) => {
+                    const done = s.status === "completed";
+                    const isNext = nextOpen && nextOpen.id === s.id;
+                    const name = SESSION_NAMES[s.sessionNumber - 1] ?? `Session ${s.sessionNumber}`;
+                    return (
+                      <li key={s.id} className="py-2.5 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span
+                            className={`w-5 h-5 rounded flex items-center justify-center shrink-0 ${
+                              done
+                                ? "bg-verdant text-surface"
+                                : "border border-line bg-surface-raised hover:border-sandstone transition-colors"
+                            }`}
+                            aria-hidden="true"
+                          >
+                            {done && (
+                              <span className="material-symbols-outlined text-[14px]">check</span>
+                            )}
+                          </span>
+                          <div className="min-w-0">
+                            <p
+                              className={`text-lg font-semibold truncate ${
+                                done ? "line-through opacity-70" : ""
+                              }`}
+                            >
+                              {s.chapters.map(formatChapterRange).join(", ")}
+                            </p>
+                            <p className="text-sm text-ink-muted mt-0.5 truncate">
+                              {name} · {s.scheduledTime} · {s.chapterCount} chapter
+                              {s.chapterCount === 1 ? "" : "s"} · ~{s.chapterCount * 3} min
+                            </p>
+                          </div>
+                        </div>
+                        {isNext ? (
+                          <Link
+                            href={`/reader?session=${s.id}`}
+                            className="text-sm font-semibold uppercase tracking-wider text-sandstone bg-sandstone-soft px-2 py-0.5 rounded shrink-0"
+                            aria-label={`Open ${name} session in reader`}
+                          >
+                            Next
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/reader?session=${s.id}`}
+                            className="p-1 text-ink-muted hover:text-ink transition-colors shrink-0"
+                            aria-label={`Open ${name} session in reader`}
+                          >
+                            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                              menu_book
+                            </span>
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+
+                {nextOpen ? (
+                  <Link
+                    href={`/reader?session=${nextOpen.id}`}
+                    className="btn btn-primary w-full justify-center"
+                  >
+                    {selected.isToday ? "Read today's chapters" : "Open reading"}
+                    <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                      arrow_forward
+                    </span>
+                  </Link>
+                ) : (
+                  <p className="text-sm text-verdant text-center font-medium">
+                    All readings completed for this day.
+                  </p>
+                )}
+              </div>
+            ) : null}
+          </aside>
+
+          <section className="card p-4 shadow-sm" aria-label="Month grid">
+            <div className="grid grid-cols-7 gap-1 text-center mb-2">
               {WEEKDAY_LABELS.map((d) => (
                 <span
                   key={d}
-                  className="text-sm text-ink-muted text-center font-medium py-1"
+                  className="text-sm font-semibold uppercase tracking-wider text-ink-muted"
                   aria-hidden="true"
                 >
                   {d}
                 </span>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            <div className="grid grid-cols-7 gap-1 select-none">
               {cells.map((cell, i) => {
-                if (!cell.iso || !cell.inMonth) {
-                  return <span key={`blank-${i}`} className="aspect-square" aria-hidden="true" />;
-                }
+                if (!cell.iso) return null;
                 const dayNum = Number(cell.iso.slice(8, 10));
+                if (!cell.inMonth) {
+                  return (
+                    <span
+                      key={`adj-${i}`}
+                      className="h-11 rounded-lg flex items-center justify-center text-sm text-ink-subtle tabular-nums"
+                      aria-hidden="true"
+                    >
+                      {dayNum}
+                    </span>
+                  );
+                }
                 const day = cell.day;
                 const isSelected = selected?.date === cell.iso;
                 const isToday = day?.isToday ?? false;
                 const cls = day
                   ? [
-                      "aspect-square rounded-lg flex items-center justify-center text-sm tabular-nums transition-colors",
+                      "h-11 rounded-lg flex flex-col items-center justify-center text-sm tabular-nums transition-colors",
                       day.status === "completed"
-                        ? "bg-ember-soft text-accent-ink font-medium"
+                        ? "bg-verdant-soft text-verdant font-medium"
                         : day.status === "missed"
                           ? "bg-sandstone-soft text-sandstone"
                           : "text-ink hover:bg-surface-sunken",
-                      isToday ? "ring-2 ring-accent-ink font-semibold" : "",
+                      isToday ? "bg-ember text-ink font-semibold shadow-sm" : "",
                       isSelected && !isToday ? "ring-2 ring-ink font-semibold" : "",
-                      isSelected && isToday ? "ring-2 ring-ink" : "",
                     ]
                       .filter(Boolean)
                       .join(" ")
-                  : "aspect-square rounded-lg flex items-center justify-center text-sm tabular-nums text-ink-subtle";
+                  : "h-11 rounded-lg flex items-center justify-center text-sm tabular-nums text-ink-subtle";
                 const label = day
                   ? `${cell.iso}: ${day.status === "completed" ? "completed" : day.status === "missed" ? "missed" : "scheduled"}${isToday ? ", today" : ""}${isSelected ? ", selected" : ""}`
                   : `${cell.iso}: not scheduled`;
-                return day ? (
+                if (!day) {
+                  return (
+                    <span key={cell.iso} className={cls} aria-label={label}>
+                      {dayNum}
+                    </span>
+                  );
+                }
+                const showDot = day.status === "completed" || isToday || day.status === "missed";
+                return (
                   <button
                     key={cell.iso}
                     type="button"
@@ -300,170 +485,57 @@ export default function CalendarPage() {
                     aria-label={label}
                     aria-pressed={isSelected}
                   >
-                    {dayNum}
+                    <span>{dayNum}</span>
+                    {showDot && (
+                      <span
+                        className={`w-1 h-1 rounded-full mt-0.5 ${
+                          day.status === "completed"
+                            ? "bg-verdant"
+                            : day.status === "missed"
+                              ? "bg-sandstone"
+                              : isToday
+                                ? "bg-ink"
+                                : ""
+                        }`}
+                        aria-hidden="true"
+                      />
+                    )}
                   </button>
-                ) : (
-                  <span key={cell.iso} className={cls} aria-label={label}>
-                    {dayNum}
-                  </span>
                 );
               })}
             </div>
-            <ul className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ink-muted">
-              <li className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded bg-ember-soft ring-1 ring-ember/40" aria-hidden="true" />
+            <ul className="mt-4 pt-3 border-t border-line flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm font-medium uppercase tracking-wide text-ink-muted">
+              <li className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-verdant" aria-hidden="true" />
                 Completed
               </li>
-              <li className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded bg-sandstone-soft" aria-hidden="true" />
+              <li className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-sandstone-soft ring-1 ring-line" aria-hidden="true" />
                 Missed
               </li>
-              <li className="flex items-center gap-2">
-                <span className="w-4 h-4 rounded ring-2 ring-accent-ink" aria-hidden="true" />
+              <li className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full border border-line bg-surface-raised" aria-hidden="true" />
+                Unread
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-ember" aria-hidden="true" />
                 Today
               </li>
             </ul>
           </section>
         </div>
 
-        <aside
-          className="order-first lg:order-none lg:col-span-2 scroll-mt-20"
-          ref={detailRef}
-        >
-          {selected ? (
-            <div className="card p-5 lg:sticky lg:top-6">
-              <p className="eyebrow">
-                Day {selected.dayNumber} · {formatDayDetail(selected.date)}
-              </p>
-
-              <p className="mt-4 text-sm text-ink-muted">Daily passage</p>
-              <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="font-semibold tracking-tight">{planLabel}</h2>
-                <span className="text-sm font-semibold text-accent-ink tabular-nums">
-                  {planPercent}% of plan complete
-                </span>
-              </div>
-
-              <div className="mt-3 flex items-center justify-between gap-3 text-sm text-ink-muted tabular-nums">
-                <span>
-                  {selected.completedChapters} of {selected.totalChapters} chapters
-                </span>
-                <span className={`status-pill status-${statusKey(selected.status)}`}>
-                  {statusLabel(selected.status)}
-                </span>
-              </div>
-              <div className="mt-2 progress-track" aria-hidden>
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${
-                      selected.totalChapters
-                        ? Math.round(
-                            (selected.completedChapters / selected.totalChapters) * 100
-                          )
-                        : 0
-                    }%`,
-                  }}
-                />
-              </div>
-
-              <ul className="mt-4 space-y-2">
-                {selected.sessions.map((s, idx) => {
-                  const done = s.status === "completed";
-                  const isNext = nextOpen && nextOpen.id === s.id;
-                  return (
-                    <li
-                      key={s.id}
-                      className="flex items-start gap-3 rounded-xl border border-line p-3"
-                    >
-                      <span
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                          done
-                            ? "bg-verdant-soft text-verdant"
-                            : "bg-surface-sunken text-ink-muted"
-                        }`}
-                      >
-                        <span
-                          className="material-symbols-outlined text-[18px]"
-                          aria-hidden="true"
-                        >
-                          {done ? "check" : "schedule"}
-                        </span>
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        {isNext && !done && (
-                          <p className="text-sm font-semibold uppercase tracking-wide text-accent-ink">
-                            Next
-                          </p>
-                        )}
-                        <p className="text-sm font-medium">
-                          {s.sessionNumber === 1
-                            ? "Morning"
-                            : s.sessionNumber === 2
-                              ? "Afternoon"
-                              : "Evening"}
-                          {" · "}
-                          <span className="font-normal text-ink-muted tabular-nums">
-                            {s.scheduledTime}
-                          </span>
-                        </p>
-                        <p className="text-sm text-ink-muted mt-0.5">
-                          {s.chapters.map(formatChapterRange).join(", ")}
-                          {" · "}
-                          {s.chapterCount} chapter{s.chapterCount === 1 ? "" : "s"}
-                        </p>
-                      </div>
-                      {!done && (
-                        <Link
-                          href={`/reader?session=${s.id}`}
-                          className="btn btn-ghost text-sm px-2 shrink-0"
-                          aria-label={`Open session ${idx + 1} in reader`}
-                        >
-                          <span
-                            className="material-symbols-outlined text-[18px]"
-                            aria-hidden="true"
-                          >
-                            menu_book
-                          </span>
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-
-              {nextOpen && (
-                <Link
-                  href={`/reader?session=${nextOpen.id}`}
-                  className="btn btn-primary w-full mt-4 justify-center"
-                >
-                  {selected.isToday ? "Read today's chapters" : "Open reading"}
-                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-                    arrow_forward
-                  </span>
-                </Link>
-              )}
-            </div>
-          ) : null}
-        </aside>
+        <div className="text-center py-2">
+          <p className="text-sm italic text-ink-muted">
+            &ldquo;Thy word is a lamp unto my feet, and a light unto my path.&rdquo;
+          </p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-ink-subtle mt-1">
+            Psalm 119:105
+          </p>
+        </div>
       </div>
     </div>
   );
-}
-
-function statusKey(status: string): string {
-  return status === "in_progress"
-    ? "in-progress"
-    : status === "not_started"
-      ? "not-started"
-      : status;
-}
-
-function statusLabel(status: string): string {
-  if (status === "completed") return "Completed";
-  if (status === "missed") return "Missed";
-  if (status === "in_progress") return "In progress";
-  return "Not started";
 }
 
 function formatDayDetail(iso: string): string {
