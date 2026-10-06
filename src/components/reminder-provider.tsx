@@ -13,6 +13,7 @@ interface DashboardPayload {
     fromName: string;
     date: string;
   }>;
+  sentReminders?: Record<string, string[]>;
   stats: {
     completedChapters: number;
     totalChapters: number;
@@ -114,12 +115,41 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const claimReminder = useCallback(
+    (sessionId: string, kind: "before" | "missed") => {
+      // Record the in-app delivery so the cron sweep does not push the
+      // same reminder again, and vice versa (server-sent kinds skip the toast).
+      fetch("/api/reminders/sent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, kind }),
+      }).catch(() => undefined);
+    },
+    []
+  );
+
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
       .then((data) => {
         const prefs = data?.user?.notificationPrefs;
         if (prefs) setPrefs(prefs);
+        // Keep the server in sync with the browser timezone so pushed
+        // reminders evaluate schedules in the user's local time.
+        const serverTz = data?.user?.timezone as string | undefined;
+        let browserTz = "";
+        try {
+          browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+        } catch {
+          browserTz = "";
+        }
+        if (browserTz && serverTz !== browserTz) {
+          fetch("/api/settings", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ timezone: browserTz }),
+          }).catch(() => undefined);
+        }
       })
       .catch(() => {});
   }, []);
@@ -139,13 +169,17 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
           const nudgeKey = `nudge:${n.id}`;
           if (notified.current.has(nudgeKey)) continue;
           notified.current.add(nudgeKey);
-          showToast(
-            "Group nudge",
-            `${n.fromName} nudged you to read in ${n.groupName}.`,
-            `/groups/${n.groupId}`,
-            "Open group",
-            "bible-nudge"
-          );
+          // Push subscriptions get the nudge as a real notification (sent
+          // synchronously by the nudge API) — skip the duplicate in-app toast.
+          if (subscribed.current !== true) {
+            showToast(
+              "Group nudge",
+              `${n.fromName} nudged you to read in ${n.groupName}.`,
+              `/groups/${n.groupId}`,
+              "Open group",
+              "bible-nudge"
+            );
+          }
           fetch(`/api/nudges/${n.id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -178,6 +212,7 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
               : stats.todayDay?.date ?? new Date().toISOString().slice(0, 10),
         }));
 
+        const sentReminders = data.sentReminders ?? {};
         const now = new Date();
 
         for (const s of sessions) {
@@ -198,14 +233,17 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
             !notified.current.has(beforeKey)
           ) {
             notified.current.add(beforeKey);
-            const reading = formatChapters(s.chapters);
-            showToast(
-              "Reading coming up",
-              `Your Bible reading is scheduled in ${Math.max(
-                1,
-                Math.round(delta / 60000)
-              )} minutes. Today's reading: ${reading}.`
-            );
+            if (!(sentReminders[s.id] ?? []).includes("before")) {
+              claimReminder(s.id, "before");
+              const reading = formatChapters(s.chapters);
+              showToast(
+                "Reading coming up",
+                `Your Bible reading is scheduled in ${Math.max(
+                  1,
+                  Math.round(delta / 60000)
+                )} minutes. Today's reading: ${reading}.`
+              );
+            }
           }
 
           const missedKey = `missed:${s.id}`;
@@ -217,11 +255,14 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
             !notified.current.has(missedKey)
           ) {
             notified.current.add(missedKey);
-            const reading = formatChapters(s.chapters);
-            showToast(
-              "Missed reading",
-              `You missed your ${sessionLabel(s.sessionNumber)} Bible reading. You still have ${reading} remaining today.`
-            );
+            if (!(sentReminders[s.id] ?? []).includes("missed")) {
+              claimReminder(s.id, "missed");
+              const reading = formatChapters(s.chapters);
+              showToast(
+                "Missed reading",
+                `You missed your ${sessionLabel(s.sessionNumber)} Bible reading. You still have ${reading} remaining today.`
+              );
+            }
           }
         }
       } catch {
@@ -235,7 +276,7 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [prefs, showToast]);
+  }, [prefs, showToast, claimReminder]);
 
   return (
     <>

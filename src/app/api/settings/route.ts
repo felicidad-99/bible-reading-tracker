@@ -55,6 +55,13 @@ export async function PATCH(req: Request) {
     }
 
     const data = parsed.data;
+    if (data.timezone !== undefined) {
+      try {
+        new Intl.DateTimeFormat("en-CA", { timeZone: data.timezone });
+      } catch {
+        return NextResponse.json({ error: "Invalid timezone" }, { status: 400 });
+      }
+    }
     await prisma.user.update({
       where: { id: userId },
       data: {

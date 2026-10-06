@@ -18,6 +18,16 @@ function authorized(req: Request): boolean {
   return header === `Bearer ${secret}`;
 }
 
+// Mirrors prisma NotificationPreference defaults so users who never opened
+// Settings behave the same as the in-app reminder provider.
+const DEFAULT_PREFS = {
+  enabled: false,
+  beforeMinutes: 15,
+  missedReminderEnabled: true,
+  missedAfterMinutes: 45,
+  maxMissedPerSession: 1,
+};
+
 export async function GET(req: Request) {
   if (!authorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -30,9 +40,6 @@ export async function GET(req: Request) {
   const users = await prisma.user.findMany({
     where: {
       pushSubscriptions: { some: {} },
-      notificationPrefs: {
-        is: { OR: [{ enabled: true }, { missedReminderEnabled: true }] },
-      },
       readingPlans: { some: { status: "active" } },
     },
     select: {
@@ -46,8 +53,7 @@ export async function GET(req: Request) {
   let sent = 0;
 
   for (const user of users) {
-    const prefs = user.notificationPrefs;
-    if (!prefs) continue;
+    const prefs = user.notificationPrefs ?? DEFAULT_PREFS;
 
     const today = localDateKey(now, user.timezone);
     const yesterday = previousDateKey(today);

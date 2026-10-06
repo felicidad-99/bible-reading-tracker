@@ -37,7 +37,7 @@ async function remindersPayload(userId: string) {
     orderBy: { createdAt: "desc" },
     select: { id: true },
   });
-  if (!plan) return { stats: null, pendingNudges };
+  if (!plan) return { stats: null, pendingNudges, sentReminders: {} };
 
   const today = todayDateString(user?.timezone);
   const [todayDay, next] = await Promise.all([
@@ -54,8 +54,24 @@ async function remindersPayload(userId: string) {
     }),
   ]);
 
+  const sessionIds = [
+    ...(todayDay?.sessions.map((s) => s.id) ?? []),
+    ...(next ? [next.id] : []),
+  ];
+  const sentRows = sessionIds.length
+    ? await prisma.reminderSent.findMany({
+        where: { userId, sessionId: { in: sessionIds } },
+        select: { sessionId: true, kind: true },
+      })
+    : [];
+  const sentReminders: Record<string, string[]> = {};
+  for (const row of sentRows) {
+    (sentReminders[row.sessionId] ??= []).push(row.kind);
+  }
+
   return {
     pendingNudges,
+    sentReminders,
     stats: {
       todayDay: todayDay ?? null,
       nextReading: next
