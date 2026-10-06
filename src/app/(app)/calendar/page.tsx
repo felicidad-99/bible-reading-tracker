@@ -158,7 +158,7 @@ export default function CalendarPage() {
         <p className="sr-only">Loading calendar</p>
         <div className="h-8 w-40 bg-surface-sunken rounded animate-pulse" />
         <div className="mt-6 grid grid-cols-7 gap-2">
-          {Array.from({ length: 35 }).map((_, i) => (
+          {Array.from({ length: 42 }).map((_, i) => (
             <div key={i} className="aspect-square card animate-pulse" />
           ))}
         </div>
@@ -206,7 +206,7 @@ export default function CalendarPage() {
   const nextOpen = selected?.sessions.find((s) => s.status !== "completed") ?? null;
 
   return (
-    <div className="max-w-md mx-auto lg:max-w-4xl">
+    <div className="max-w-md mx-auto md:max-w-2xl lg:max-w-4xl">
       <div className="-mx-4 md:-mx-8 border-b border-line">
         <div className="flex justify-between items-center px-4 md:px-8 py-2">
           <div className="flex items-center gap-3">
@@ -270,7 +270,7 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          <div className="card px-4 py-2.5 flex items-center justify-between gap-3 text-sm">
+          <div className="card px-4 py-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm">
             <div className="flex items-center gap-2 min-w-0">
               <span className="w-2 h-2 rounded-full bg-verdant shrink-0" aria-hidden="true" />
               <span className="font-medium text-ink tabular-nums whitespace-nowrap">
@@ -278,24 +278,26 @@ export default function CalendarPage() {
               </span>
               <span className="text-ink-muted">completed</span>
             </div>
-            <div className="h-3 w-px bg-line shrink-0" aria-hidden="true" />
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span
-                className="material-symbols-outlined text-[16px] text-ember fill-icon"
-                aria-hidden="true"
-              >
-                local_fire_department
-              </span>
-              <span className="text-sm font-semibold tabular-nums">
-                {currentStreak} day streak
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="h-3 w-px bg-line" aria-hidden="true" />
+              <span className="flex items-center gap-1.5">
+                <span
+                  className="material-symbols-outlined text-[16px] text-ember fill-icon"
+                  aria-hidden="true"
+                >
+                  local_fire_department
+                </span>
+                <span className="text-sm font-semibold tabular-nums">
+                  {currentStreak} day streak
+                </span>
               </span>
             </div>
           </div>
         </section>
 
-        <div className="lg:grid lg:grid-cols-5 lg:gap-6">
+        <div className="flex flex-col gap-4 lg:grid lg:grid-cols-5 lg:gap-6">
           <aside
-            className="order-first lg:order-none lg:col-span-2 scroll-mt-20"
+            className="order-2 lg:order-1 lg:col-span-2 scroll-mt-20"
             ref={detailRef}
           >
             {selected ? (
@@ -421,7 +423,7 @@ export default function CalendarPage() {
             ) : null}
           </aside>
 
-          <section className="card p-4 shadow-sm" aria-label="Month grid">
+          <section className="order-1 lg:order-2 card p-4 shadow-sm" aria-label="Month grid">
             <div className="grid grid-cols-7 gap-1 text-center mb-2">
               {WEEKDAY_LABELS.map((d) => (
                 <span
