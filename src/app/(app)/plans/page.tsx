@@ -240,7 +240,7 @@ export default function PlansPage() {
                       {preset.badge}
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-[15px] font-semibold text-ink truncate">
+                      <span className="block text-[13px] font-semibold text-ink truncate">
                         {preset.name}
                       </span>
                       <span className="block text-sm text-ink-muted mt-0.5 truncate">

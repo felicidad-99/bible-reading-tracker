@@ -534,7 +534,7 @@ export default function SettingsPage() {
               <span className="text-sm uppercase tracking-wider text-accent-ink font-semibold block">
                 Active Reading Plan
               </span>
-              <h3 className="text-[17px] font-semibold text-ink leading-snug truncate">
+              <h3 className="text-[15px] font-semibold text-ink leading-snug truncate">
                 {planName ?? "No active plan yet"}
               </h3>
             </div>

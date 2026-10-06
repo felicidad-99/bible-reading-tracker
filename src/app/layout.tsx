@@ -45,10 +45,12 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`min-h-dvh antialiased ${geist.variable} ${trocchi.variable}`}
-      >
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geist.variable} ${trocchi.variable}`}
+    >
+      <body className="min-h-dvh antialiased">
         <ThemeProvider>{children}</ThemeProvider>
         <ServiceWorkerRegister />
       </body>

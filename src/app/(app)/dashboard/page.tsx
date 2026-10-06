@@ -324,7 +324,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex-1 min-w-0 flex flex-col items-start justify-center text-left pl-1">
-              <div className="text-[18px] font-semibold tracking-tight leading-snug">
+              <div className="text-[16px] font-semibold tracking-tight leading-snug">
                 {readingLabel ?? "Plan complete"}
               </div>
               <div className="flex items-center gap-1.5 mt-1 text-ink-muted text-sm">

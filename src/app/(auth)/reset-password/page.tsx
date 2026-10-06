@@ -15,7 +15,7 @@ export default async function ResetPasswordPage({
   return (
     <AuthShell subtitle="Open the email link to auto-fill the token, or paste it below.">
       {token && (
-        <p className="text-sm font-mono break-all text-center text-ink-muted mb-4">
+        <p className="text-sm break-all text-center text-ink-muted mb-4">
           {token}
         </p>
       )}

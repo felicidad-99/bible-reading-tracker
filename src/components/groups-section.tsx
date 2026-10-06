@@ -82,7 +82,7 @@ export function JoinGroupCard() {
           <span className="material-symbols-outlined text-[20px]">key</span>
         </span>
         <div className="min-w-0">
-          <h3 id="invite-heading" className="text-[15px] font-semibold text-ink">
+          <h3 id="invite-heading" className="text-[13px] font-semibold text-ink">
             Have an invite code?
           </h3>
           <p className="text-sm text-ink-muted leading-snug mt-0.5">
@@ -98,7 +98,7 @@ export function JoinGroupCard() {
           <input
             id="invite-code"
             type="text"
-            className="input w-full pr-28 font-mono uppercase tracking-wider"
+            className="input w-full pr-28 uppercase tracking-wider"
             placeholder="e.g. GRACE-2024"
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value)}

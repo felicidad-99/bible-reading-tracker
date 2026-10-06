@@ -91,7 +91,7 @@ export default function GroupsPage() {
                   <span className="material-symbols-outlined text-[22px]">group_add</span>
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[15px] font-semibold text-ink">Start a new circle</p>
+                  <p className="text-[13px] font-semibold text-ink">Start a new circle</p>
                   <p className="text-sm text-ink-muted mt-0.5 truncate">
                     Create a group and invite friends with a code.
                   </p>

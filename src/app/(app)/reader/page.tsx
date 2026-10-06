@@ -629,7 +629,7 @@ function ReaderInner() {
                               {remaining > 0 ? `${remaining * 3}m left` : "Done"}
                             </span>
                           </div>
-                          <h2 className="text-[18px] font-semibold text-ink font-sans mt-2 mb-1">
+                          <h2 className="text-[16px] font-semibold text-ink font-sans mt-2 mb-1">
                             {remaining > 0
                               ? `You are ${remaining} chapter${remaining === 1 ? "" : "s"} from finishing this session`
                               : "You've finished every chapter in this session"}

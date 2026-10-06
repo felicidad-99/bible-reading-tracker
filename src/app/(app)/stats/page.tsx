@@ -194,7 +194,7 @@ export default function StatsPage() {
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 id="weekly-heading" className="text-[15px] font-medium text-ink leading-none">
+              <h2 id="weekly-heading" className="text-[13px] font-medium text-ink leading-none">
                 Weekly rhythm
               </h2>
               <p className="text-sm text-ink-muted mt-1 tabular-nums">
@@ -259,7 +259,7 @@ export default function StatsPage() {
           className="card p-4 fade-up fade-up-delay-2"
           aria-labelledby="patterns-heading"
         >
-          <h2 id="patterns-heading" className="text-[15px] font-medium text-ink mb-1">
+          <h2 id="patterns-heading" className="text-[13px] font-medium text-ink mb-1">
             Reading patterns
           </h2>
           <ul className="divide-y divide-line">

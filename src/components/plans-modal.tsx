@@ -233,7 +233,7 @@ export function PlansModal({
                         check_circle
                       </span>
                       <div className="min-w-0">
-                        <h4 className="text-[15px] font-semibold text-ink">
+                        <h4 className="text-[13px] font-semibold text-ink">
                           {activeName}
                         </h4>
                         {activePreset && (
@@ -284,7 +284,7 @@ export function PlansModal({
                           >
                             {preset.icon}
                           </span>
-                          <h4 className="text-[15px] font-semibold text-ink">
+                          <h4 className="text-[13px] font-semibold text-ink">
                             {preset.name}
                           </h4>
                         </div>
