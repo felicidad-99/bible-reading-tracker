@@ -232,14 +232,14 @@ export default function CalendarPage() {
 
       <div className="pt-4 space-y-4">
         <section className="space-y-2 fade-up">
-          <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="w-full min-w-0 sm:w-auto">
               <p className="eyebrow">Reading log</p>
-              <h1 className="text-2xl font-medium tracking-tight truncate">
+              <h1 className="text-2xl font-medium tracking-tight">
                 {viewMonth ? `${MONTHS[viewMonth.m]} ${viewMonth.y}` : "Calendar"}
               </h1>
             </div>
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1 shrink-0 ml-auto">
               <button
                 type="button"
                 className="min-h-11 px-3 rounded-lg text-sm font-medium text-accent-ink hover:bg-surface-sunken transition-colors duration-150"
@@ -423,7 +423,7 @@ export default function CalendarPage() {
             ) : null}
           </aside>
 
-          <section className="order-1 lg:order-2 card p-4 shadow-sm" aria-label="Month grid">
+          <section className="order-1 lg:order-2 lg:col-span-3 card p-4 shadow-sm" aria-label="Month grid">
             <div className="grid grid-cols-7 gap-1 text-center mb-2">
               {WEEKDAY_LABELS.map((d) => (
                 <span
