@@ -10,8 +10,7 @@ export default function LandingPage() {
     <div className="landing-page dark text-ink min-h-dvh flex flex-col relative">
       <div
         aria-hidden="true"
-        className="fixed inset-0 -z-10 bg-black bg-cover bg-bottom"
-        style={{ backgroundImage: "url(/landing-bg.jpg)" }}
+        className="landing-bg fixed inset-0 -z-10"
       />
       <div
         aria-hidden="true"
@@ -27,7 +26,7 @@ export default function LandingPage() {
             Bible Track
           </Link>
           <nav className="flex items-center gap-2" aria-label="Account">
-            <Link href="/signin" className="btn text-sm bg-inverse-surface text-inverse-ink hover:bg-white">
+            <Link href="/signin" className="btn text-sm text-ink hover:bg-inverse-surface">
               Sign in
             </Link>
             <Link href="/signup" className="btn btn-primary text-sm">
@@ -37,7 +36,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col justify-center px-4 py-14 md:py-20">
+      <main className="flex-1 flex flex-col justify-center px-4 pt-1 pb-20 md:pt-4 md:pb-36">
         <section className="max-w-5xl mx-auto w-full">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.05] text-balance max-w-4xl mx-auto fade-up fade-up-delay-1">
@@ -52,7 +51,7 @@ export default function LandingPage() {
               <Link href="/signup" className="btn btn-primary px-7 py-3.5 text-base">
                 Create a reading plan
               </Link>
-              <Link href="/signin" className="btn px-7 py-3.5 text-base bg-inverse-surface text-inverse-ink hover:bg-white">
+              <Link href="/signin" className="btn px-7 py-3.5 text-base text-ink hover:bg-inverse-surface">
                 Sign in
               </Link>
             </div>
