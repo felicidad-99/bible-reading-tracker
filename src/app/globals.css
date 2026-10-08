@@ -141,6 +141,14 @@
     color-scheme: dark;
   }
 
+  html:has(.landing-page) {
+    color-scheme: dark;
+  }
+
+  body:has(.landing-page) {
+    background-color: #17120e;
+  }
+
   body {
     background-color: var(--color-surface);
     color: var(--color-ink);

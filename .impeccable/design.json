@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-08T15:40:00Z",
+  "title": "Design System: Bible Track",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Living Ember",
+        "canonical": "#fd8240",
+        "tonalRamp": ["#4a1f0a", "#7a3410", "#a04100", "#c75f1e", "#fd8240", "#ffa66b", "#ffc79e", "#ffe9dc"]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Warm Alabaster",
+        "canonical": "#fff8f5",
+        "tonalRamp": ["#1e1b18", "#3d3630", "#574239", "#85695e", "#b5a399", "#dec0b4", "#f4ece8", "#fff8f5"]
+      },
+      "dark-bg": {
+        "role": "neutral",
+        "displayName": "Sanctuary Black",
+        "canonical": "#17120e",
+        "tonalRamp": ["#0a0806", "#120e0b", "#17120e", "#211b16", "#2f2820", "#3a3229", "#4a4038", "#5c5148"]
+      },
+      "verdant": {
+        "role": "tertiary",
+        "displayName": "Verdant",
+        "canonical": "#3d785f",
+        "tonalRamp": ["#143528", "#1e4d3a", "#2a6049", "#3d785f", "#529175", "#67a88c", "#8fc4a9", "#d0e6da"]
+      },
+      "sandstone": {
+        "role": "tertiary",
+        "displayName": "Sandstone",
+        "canonical": "#9a6228",
+        "tonalRamp": ["#4a2c0a", "#6b4212", "#8a541a", "#9a6228", "#b57d3d", "#d99650", "#e8b877", "#fff5e3"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Landing hero only; never inside the app." },
+      "title": { "displayName": "Title", "purpose": "Page and section headings." },
+      "body": { "displayName": "Body", "purpose": "Default interface text; 16px for sub-copy." },
+      "label": { "displayName": "Label", "purpose": "Buttons, field labels, pills, meta rows." },
+      "scripture": { "displayName": "Scripture", "purpose": "Trocchi serif, reader passages and quotes only." }
+    },
+    "shadows": [
+      {
+        "name": "focus-glow",
+        "value": "0 0 0 3px color-mix(in srgb, #fd8240 20%, transparent)",
+        "purpose": "The system's only shadow: input/field focus ring."
+      }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.32, 0.72, 0, 1)", "purpose": "Expo-out easing for all state transitions (160ms) and entrances (700ms)." },
+      { "name": "fade-up", "value": "translateY(16px) to 0 with opacity, 700ms ease-standard, staggered 80ms delays", "purpose": "The landing's single authored entrance family." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one ember action per screen: pill, charcoal label.",
+      "html": "<button class=\"ds-btn-primary\">Create a reading plan</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;min-width:44px;padding:10px 20px;border:none;border-radius:9999px;background:#fd8240;color:#1e1b18;font-family:Geist,ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:560;line-height:1rem;cursor:pointer;transition:background 160ms cubic-bezier(0.32,0.72,0,1),color 160ms cubic-bezier(0.32,0.72,0,1),transform 160ms cubic-bezier(0.32,0.72,0,1)}.ds-btn-primary:hover{background:#a04100;color:#ffffff}.ds-btn-primary:active{transform:scale(0.98)}.ds-btn-primary:focus-visible{outline:2px solid #a04100;outline-offset:2px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Raised-surface pill for the second choice; hairline border.",
+      "html": "<button class=\"ds-btn-secondary\">Sign in</button>",
+      "css": ".ds-btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;min-width:44px;padding:10px 20px;border:1px solid #f4f4f2;border-radius:9999px;background:#ffffff;color:#1e1b18;font-family:Geist,ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:560;line-height:1rem;cursor:pointer;transition:background 160ms cubic-bezier(0.32,0.72,0,1),transform 160ms cubic-bezier(0.32,0.72,0,1)}.ds-btn-secondary:hover{background:#fff4f1}.ds-btn-secondary:active{transform:scale(0.98)}.ds-btn-secondary:focus-visible{outline:2px solid #a04100;outline-offset:2px}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Quiet text action; sunken tint only on hover.",
+      "html": "<button class=\"ds-btn-ghost\">Cancel</button>",
+      "css": ".ds-btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;min-width:44px;padding:10px 20px;border:none;border-radius:9999px;background:transparent;color:#574239;font-family:Geist,ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:560;line-height:1rem;cursor:pointer;transition:background 160ms cubic-bezier(0.32,0.72,0,1),color 160ms cubic-bezier(0.32,0.72,0,1)}.ds-btn-ghost:hover{background:#fff4f1;color:#1e1b18}.ds-btn-ghost:focus-visible{outline:2px solid #a04100;outline-offset:2px}"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The standard content well: flat, 8px, hairline border, no shadow.",
+      "html": "<div class=\"ds-card\"><strong class=\"ds-card-title\">1,189 chapters</strong><p class=\"ds-card-body\">Every book, allocated once. No skips, no duplicates.</p></div>",
+      "css": ".ds-card{background:#ffffff;color:#1e1b18;border:1px solid #f4f4f2;border-radius:8px;padding:20px;font-family:Geist,ui-sans-serif,system-ui,sans-serif}.ds-card-title{display:block;font-size:14px;font-weight:560}.ds-card-body{margin:6px 0 0;font-size:14px;line-height:1.5;color:#574239}.ds-card:hover{border-color:#dec0b4}"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Warm field with the system's only shadow: the 3px ember focus glow.",
+      "html": "<input class=\"ds-input\" placeholder=\"you@example.com\" />",
+      "css": ".ds-input{width:100%;min-height:44px;padding:10px 14px;border:1px solid #9d8b80;border-radius:8px;background:#ffffff;color:#1e1b18;font-family:Geist,ui-sans-serif,system-ui,sans-serif;font-size:14px;transition:border-color 160ms cubic-bezier(0.32,0.72,0,1)}.ds-input::placeholder{color:#574239}.ds-input:focus{border-color:#a04100;outline:none;box-shadow:0 0 0 3px color-mix(in srgb,#fd8240 20%,transparent)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Ember Sanctuary",
+    "overview": "Bible Track is a warm-lit sanctuary for a daily habit: quiet reverence without guilt, steadiness without coldness. The system reads like candlelight on warm paper — cream alabaster grounds for reading surfaces, a single living-ember accent that marks the next faithful step, and a complete dark twin (Sanctuary Black) for night reading and the landing threshold, where a photographed open Bible glows at the bottom edge. Density is calm and mobile-first: one task per screen, generous separation, controls within thumb reach. Confirmed visual rejections: no guilt-driven gamification chrome, no pure-gray neutrals, no cool slate dark mode.",
+    "keyCharacteristics": [
+      "Warm-tinted neutrals everywhere; the ember accent marks primary action only.",
+      "Two complete palettes (light cream, dark sanctuary) switched by `.dark` tokens — same roles, same names.",
+      "Pill buttons, 8px cards, 1px warm borders; flat and tonal, never floating.",
+      "Geist for interface voice; Trocchi reserved for Scripture text.",
+      "Gentle 160ms expo easing; motion is reassurance, never spectacle."
+    ],
+    "rules": [
+      { "name": "The Warm-Neutrals Rule", "body": "No pure gray anywhere — text, borders, fields, and shadows are tinted from the warm palette. A cool or neutral gray hex is a bug.", "section": "colors" },
+      { "name": "The One-Ember Rule", "body": "Living Ember marks primary action and progress signal only; it is never a large background field or decorative wash.", "section": "colors" },
+      { "name": "The 12px Floor Rule", "body": "No interface text below 12px, at any breakpoint. Hierarchy comes from weight and color, not from shrinking further.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces sit flat at rest; the focus glow is the only shadow in the system. New components earn separation from tone and border, never from drop shadows.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep every neutral warm-tinted (Alabaster, Umber, Hairline) and switch whole palettes with the `.dark` token block — never hand-pick one-off darks.",
+      "Do give each screen one ember primary action; secondary choices step down to secondary or ghost.",
+      "Do hold the 12px type floor, 8px card radius, pill buttons, and 160ms expo easing (`cubic-bezier(0.32, 0.72, 0, 1)`).",
+      "Do use Trocchi only for Scripture text; interface copy stays Geist.",
+      "Do theme browser surfaces (selection, focus, caret, scrollbars) from the palette — the landing does this by carrying `color-scheme: dark`."
+    ],
+    "donts": [
+      "Don't add card drop shadows, hard offset shadows, or border-left stripes; separate with tone and 1px hairlines.",
+      "Don't use pure gray, cool slate, or blue-black values anywhere.",
+      "Don't let ember become a large background field or a second decorative accent.",
+      "Don't set interface text under 12px or push display tracking past -0.04em.",
+      "Don't introduce emoji or unicode glyphs as icons; use Material Symbols or inline SVG in one weight."
+    ]
+  }
+}
