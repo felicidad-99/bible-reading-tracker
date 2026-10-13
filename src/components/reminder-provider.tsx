@@ -286,7 +286,7 @@ export function ReminderProvider({ children }: { children: React.ReactNode }) {
       </div>
       {toast && (
         <div
-          className="fixed z-50 bottom-24 md:bottom-6 right-4 left-4 md:left-auto md:w-80 card p-4 shadow-lg fade-up"
+          className="fixed z-50 bottom-24 md:bottom-6 right-4 left-4 md:left-auto md:w-80 card p-4 fade-up"
         >
           <div className="flex items-start justify-between gap-3">
             <div>

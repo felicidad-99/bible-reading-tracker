@@ -301,7 +301,7 @@ export default function CalendarPage() {
             ref={detailRef}
           >
             {selected ? (
-              <div className="card p-4 lg:sticky lg:top-6 space-y-4 shadow-sm">
+              <div className="card p-4 lg:sticky lg:top-6 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="eyebrow">
@@ -423,7 +423,7 @@ export default function CalendarPage() {
             ) : null}
           </aside>
 
-          <section className="order-1 lg:order-2 lg:col-span-3 card p-4 shadow-sm" aria-label="Month grid">
+          <section className="order-1 lg:order-2 lg:col-span-3 card p-4" aria-label="Month grid">
             <div className="grid grid-cols-7 gap-1 text-center mb-2">
               {WEEKDAY_LABELS.map((d) => (
                 <span
@@ -461,7 +461,7 @@ export default function CalendarPage() {
                         : day.status === "missed"
                           ? "bg-sandstone-soft text-sandstone"
                           : "text-ink hover:bg-surface-sunken",
-                      isToday ? "bg-ember text-ink font-semibold shadow-sm" : "",
+                      isToday ? "bg-ember text-ink font-semibold" : "",
                       isSelected && !isToday ? "ring-2 ring-ink font-semibold" : "",
                     ]
                       .filter(Boolean)

@@ -120,7 +120,7 @@ export function AppShell({
       </div>
 
       <nav
-        className="md:hidden fixed bottom-4 inset-x-0 mx-auto max-w-xs z-50 rounded-full px-3 py-2 bg-surface-raised/95 backdrop-blur-md border border-line shadow-md flex justify-around items-center"
+        className="md:hidden fixed bottom-4 inset-x-0 mx-auto max-w-xs z-50 rounded-full px-3 py-2 bg-surface-raised/95 backdrop-blur-md border border-line flex justify-around items-center"
         aria-label="Primary"
       >
         {MOBILE_NAV.map((item) => (

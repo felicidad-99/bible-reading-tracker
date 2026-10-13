@@ -150,7 +150,7 @@ export default function PlansPage() {
         {!loading && plan && progress && (
           <section
             aria-labelledby="in-progress-heading"
-            className="bg-verdant-soft border border-verdant/15 rounded-lg p-5 space-y-3.5 shadow-sm"
+            className="bg-verdant-soft border border-verdant/15 rounded-lg p-5 space-y-3.5"
           >
             <div className="flex items-center justify-between gap-3">
               <span className="flex items-center gap-1.5">
@@ -228,7 +228,7 @@ export default function PlansPage() {
                   type="button"
                   onClick={() => void select(preset)}
                   disabled={busyId !== null}
-                  className={`w-full text-left bg-surface-raised rounded-lg border border-line p-4 flex items-center justify-between gap-3 hover:bg-surface-sunken transition-all disabled:opacity-60 shadow-sm group ${
+                  className={`w-full text-left bg-surface-raised rounded-lg border border-line p-4 flex items-center justify-between gap-3 hover:bg-surface-sunken transition-all disabled:opacity-60 group ${
                     dimmed ? "pointer-events-none" : ""
                   }`}
                 >

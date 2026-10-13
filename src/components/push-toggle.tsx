@@ -17,6 +17,33 @@ type Status =
   | "on"
   | "off";
 
+/**
+ * Reminders default to off, so a fresh push subscription would never receive
+ * the "reading coming up" notification. If the user has never saved reminder
+ * preferences, turn them on with the standard defaults.
+ */
+async function enableRemindersIfUnset() {
+  try {
+    const res = await fetch("/api/settings");
+    const data = await res.json();
+    if (data?.user?.notificationPrefs) return;
+    await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        notification: {
+          enabled: true,
+          beforeMinutes: 15,
+          missedReminderEnabled: true,
+          missedAfterMinutes: 45,
+        },
+      }),
+    });
+  } catch {
+    // preferences stay as they were
+  }
+}
+
 export function PushToggle() {
   const [status, setStatus] = useState<Status>("loading");
   const [publicKey, setPublicKey] = useState<string | null>(null);
@@ -67,6 +94,7 @@ export function PushToggle() {
       if (result.ok) {
         setStatus("on");
         setNote(result.note);
+        await enableRemindersIfUnset();
       } else if (result.note === "denied") {
         setStatus("denied");
         setNote("Permission not granted.");

@@ -1,6 +1,7 @@
 /* Service worker: cache shell + Bible chapters for offline reading. */
-const CACHE_NAME = "bible-tracker-v1";
-const PRECACHE = ["/", "/dashboard", "/offline"];
+const CACHE_NAME = "bible-tracker-v2";
+const OFFLINE_URL = "/offline.html";
+const PRECACHE = ["/", OFFLINE_URL];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -32,8 +33,7 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/icons/icon-192.svg",
-      badge: "/icons/icon-192.svg",
+      icon: "/icons/icon-192.png",
       tag: data.tag || "bible-reminder",
       data: { url: data.url || "/dashboard" },
     })
@@ -42,16 +42,25 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = (event.notification.data && event.notification.data.url) || "/dashboard";
+  const target = new URL(
+    (event.notification.data && event.notification.data.url) || "/dashboard",
+    self.location.origin
+  ).href;
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (list) => {
       for (const client of list) {
-        if ("focus" in client) {
-          if ("navigate" in client) return client.navigate(url).then((c) => c || client.focus());
-          return client.focus();
+        if (new URL(client.url).origin !== self.location.origin) continue;
+        try {
+          const focused = "focus" in client ? await client.focus() : client;
+          if (focused && "navigate" in focused && focused.url !== target) {
+            await focused.navigate(target);
+          }
+          return;
+        } catch {
+          // fall through to opening a new window
         }
       }
-      if (self.clients.openWindow) return self.clients.openWindow(url);
+      if (self.clients.openWindow) return self.clients.openWindow(target);
     })
   );
 });
@@ -101,7 +110,7 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() =>
-          caches.match(request).then((cached) => cached || caches.match("/offline"))
+          caches.match(request).then((cached) => cached || caches.match(OFFLINE_URL))
         )
     );
   }

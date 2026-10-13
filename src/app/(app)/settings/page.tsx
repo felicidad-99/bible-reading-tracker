@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { PushToggle } from "@/components/push-toggle";
+import { enablePush, getPushConfig, pushSupported } from "@/lib/push/subscribe-client";
 import { PlansModal } from "@/components/plans-modal";
 import { derivePlanName } from "@/lib/plan/presets";
 import { progressOf, todayReadingText } from "@/lib/plan/plan-display";
@@ -73,7 +74,7 @@ function Switch({
         }`}
       >
         <span
-          className={`block w-5 h-5 bg-surface-raised rounded-full shadow-sm transition-transform duration-200 ${
+          className={`block w-5 h-5 bg-surface-raised rounded-full transition-transform duration-200 ${
             checked ? "translate-x-5" : "translate-x-0"
           }`}
         />
@@ -98,7 +99,7 @@ function SectionCard({
       <h2 className="text-sm font-semibold text-ink-muted uppercase tracking-wider px-1 mb-2 select-none">
         {title}
       </h2>
-      <div className="bg-surface-raised rounded-lg border border-line shadow-sm overflow-hidden divide-y divide-line">
+      <div className="bg-surface-raised rounded-lg border border-line overflow-hidden divide-y divide-line">
         {children}
       </div>
     </section>
@@ -329,8 +330,14 @@ export default function SettingsPage() {
       });
       if (!res.ok) throw new Error("Failed to save");
 
-      if (notifEnabled && typeof Notification !== "undefined" && Notification.permission === "default") {
-        await Notification.requestPermission();
+      if (notifEnabled && pushSupported()) {
+        // Reminders only reach a closed app through a push subscription.
+        const config = await getPushConfig().catch(() => null);
+        if (config?.configured && config.publicKey) {
+          await enablePush(config.publicKey);
+        } else if (Notification.permission === "default") {
+          await Notification.requestPermission();
+        }
       }
 
       setMessage({ type: "ok", text: "Reading and notification settings saved." });
@@ -481,7 +488,7 @@ export default function SettingsPage() {
 
       <section
         aria-label="User profile"
-        className="bg-surface-raised rounded-lg border border-line p-4 flex items-center justify-between gap-3 shadow-sm hover:border-sandstone/30 transition-colors duration-150"
+        className="bg-surface-raised rounded-lg border border-line p-4 flex items-center justify-between gap-3 hover:border-sandstone/30 transition-colors duration-150"
       >
         <div className="flex items-center gap-3.5 min-w-0">
           <div className="w-12 h-12 rounded-full bg-sandstone-soft border border-sandstone/30 flex items-center justify-center shrink-0">
@@ -518,7 +525,7 @@ export default function SettingsPage() {
 
       <section
         aria-label="Active reading plan"
-        className="bg-gradient-to-br from-surface-sunken via-surface-raised to-sandstone-soft/40 rounded-xl border border-sandstone/30 p-4 shadow-sm relative overflow-hidden"
+        className="bg-gradient-to-br from-surface-sunken via-surface-raised to-sandstone-soft/40 rounded-lg border border-sandstone/30 p-4 relative overflow-hidden"
       >
         <div className="flex items-start justify-between mb-3 gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -542,7 +549,7 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setPlansOpen(true)}
-            className="text-sm font-medium text-accent-ink bg-surface-raised border border-sandstone/40 px-4 min-h-11 rounded-full shadow-sm hover:border-ember transition-colors flex items-center gap-1.5 shrink-0"
+            className="text-sm font-medium text-accent-ink bg-surface-raised border border-sandstone/40 px-4 min-h-11 rounded-full hover:border-ember transition-colors flex items-center gap-1.5 shrink-0"
           >
             {planName ? "Change" : "Choose"}
             <span className="material-symbols-outlined text-[16px]" aria-hidden="true">

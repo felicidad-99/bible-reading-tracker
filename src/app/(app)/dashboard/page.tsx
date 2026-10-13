@@ -159,7 +159,7 @@ export default function DashboardPage() {
   if (error === "no-plan" || !plan) {
     return (
       <div className="max-w-md mx-auto text-center py-16">
-        <span className="mx-auto w-14 h-14 rounded-xl bg-sandstone-soft flex items-center justify-center">
+        <span className="mx-auto w-14 h-14 rounded-lg bg-sandstone-soft flex items-center justify-center">
           <span
             className="material-symbols-outlined text-ember text-[28px] fill-icon"
             aria-hidden="true"
@@ -245,7 +245,7 @@ export default function DashboardPage() {
         </div>
         <Link
           href="/settings"
-          className="w-10 h-10 rounded-full bg-surface-raised border border-line flex items-center justify-center text-ink-muted hover:bg-surface-sunken hover:text-ink transition-colors duration-150 active:scale-95 shadow-sm shrink-0"
+          className="w-10 h-10 rounded-full bg-surface-raised border border-line flex items-center justify-center text-ink-muted hover:bg-surface-sunken hover:text-ink transition-colors duration-150 active:scale-95 shrink-0"
           aria-label={initials ? `Profile of ${userName}` : "Open profile"}
         >
           {initials ? (
@@ -459,7 +459,7 @@ export default function DashboardPage() {
                     </span>
                     <span aria-hidden="true">
                       {day.status === "completed" ? (
-                        <span className="w-7 h-7 rounded-full bg-verdant text-surface flex items-center justify-center shadow-sm">
+                        <span className="w-7 h-7 rounded-full bg-verdant text-surface flex items-center justify-center">
                           <span className="material-symbols-outlined text-[15px]">check</span>
                         </span>
                       ) : day.status === "missed" ? (

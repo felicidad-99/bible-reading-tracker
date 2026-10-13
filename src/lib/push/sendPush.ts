@@ -12,7 +12,11 @@ function ensureConfigured(): boolean {
     return false;
   }
   try {
-    webpush.setVapidDetails("mailto:hello@bible-tracker.app", publicKey, privateKey);
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT || "mailto:hello@bible-tracker.app",
+      publicKey,
+      privateKey
+    );
     configured = true;
   } catch {
     configured = false;
@@ -55,6 +59,7 @@ export async function sendPushToUser(
         sent++;
       } catch (err) {
         const status = (err as { statusCode?: number }).statusCode;
+        console.error("[push] send failed", status ?? "", (err as Error).message);
         if (status === 404 || status === 410) {
           await prisma.pushSubscription
             .delete({ where: { id: sub.id } })

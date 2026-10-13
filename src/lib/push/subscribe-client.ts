@@ -46,10 +46,21 @@ export async function getActiveSubscription(): Promise<PushSubscription | null> 
   return reg.pushManager.getSubscription();
 }
 
+/** Existing browser subscription, or a fresh one if none/stale key. */
+export async function ensureSubscription(
+  publicKey: string
+): Promise<PushSubscription> {
+  const existing = await getActiveSubscription();
+  if (existing) return existing;
+  return registerAndSubscribe(publicKey);
+}
+
 export async function registerAndSubscribe(
   publicKey: string
 ): Promise<PushSubscription> {
-  const reg = await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.register("/sw.js");
+  // subscribe() throws unless the worker is active, so wait for it.
+  const reg = await navigator.serviceWorker.ready;
   return reg.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: urlBase64ToUint8Array(publicKey),
@@ -82,8 +93,7 @@ export async function enablePush(
         note: permission === "denied" ? "denied" : "Permission not granted.",
       };
     }
-    const existing = await getActiveSubscription();
-    const sub = existing ?? (await registerAndSubscribe(publicKey));
+    const sub = await ensureSubscription(publicKey);
     const saved = await saveSubscription(sub);
     if (!saved) return { ok: false, note: "Failed to save subscription" };
     return { ok: true, note: "Push notifications enabled." };
@@ -118,9 +128,9 @@ export async function resyncSubscription(): Promise<void> {
     if (Notification.permission !== "granted") return;
     const config = await getPushConfig();
     if (!config.configured || !config.publicKey) return;
-    const existing = await getActiveSubscription();
-    if (existing) return;
-    const sub = await registerAndSubscribe(config.publicKey);
+    // Re-save even when a subscription exists: the server row may have been
+    // pruned (410) or never saved if the first POST failed.
+    const sub = await ensureSubscription(config.publicKey);
     await saveSubscription(sub);
   } catch {
     // silent: retried on next launch

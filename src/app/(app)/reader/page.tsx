@@ -583,13 +583,13 @@ function ReaderInner() {
                   ) : null;
                   const highlight =
                     activeVerse === v.number
-                      ? "text-ink rounded-md bg-accent-soft px-1 -mx-1"
+                      ? "text-ink rounded-lg bg-accent-soft px-1 -mx-1"
                       : "text-ink";
 
                   return (
                     <div key={v.number}>
                       {v.number === memoryVerseNum ? (
-                        <div className="my-6 bg-surface-sunken border-l-[3px] border-ember rounded-r-lg p-4 shadow-sm">
+                        <div className="my-6 bg-surface-sunken border-l-[3px] border-ember rounded-r-lg p-4">
                           <div className="flex items-center gap-1.5 mb-1.5 text-accent-ink font-sans">
                             <span
                               className="material-symbols-outlined text-[16px] fill-icon"
@@ -614,7 +614,7 @@ function ReaderInner() {
                       )}
 
                       {v.number === momentumVerseNum && totalAssigned > 0 && (
-                        <aside className="my-7 bg-verdant-soft border border-line rounded-xl p-4 font-sans">
+                        <aside className="my-7 bg-verdant-soft border border-line rounded-lg p-4 font-sans">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-center gap-2">
                               <span
@@ -727,7 +727,7 @@ function ReaderInner() {
         </div>
       </main>
 
-      <div className="fixed bottom-20 left-0 right-0 max-w-[420px] mx-auto z-40 bg-surface-raised/95 backdrop-blur-md border-t border-b border-line rounded-2xl shadow-[0_-4px_20px_rgba(77,72,69,0.06)] px-5 pt-3.5 pb-4">
+      <div className="fixed bottom-20 left-0 right-0 max-w-[420px] mx-auto z-40 bg-surface-raised/95 backdrop-blur-md border-t border-b border-line rounded-lg px-5 pt-3.5 pb-4">
         <div className="w-8 h-1 bg-line rounded-full mx-auto mb-3" aria-hidden="true" />
         <div className="flex items-center justify-between gap-3 mb-3 px-0.5">
           <div className="min-w-0">

@@ -154,7 +154,7 @@ export function PlansModal({
         aria-labelledby="plans-modal-title"
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="bg-surface-raised rounded-t-2xl border-t border-line shadow-2xl flex flex-col max-h-[85vh] outline-none animate-[fadeUp_280ms_ease-out]"
+        className="bg-surface-raised rounded-t-2xl border-t border-line flex flex-col max-h-[85vh] outline-none animate-[fadeUp_280ms_ease-out]"
       >
         <div className="pt-3 pb-1 flex justify-center" aria-hidden="true">
           <div className="w-10 h-1 bg-line-strong rounded-full" />
@@ -223,7 +223,7 @@ export function PlansModal({
               )}
 
               {plan && progress && activeName && (
-                <div className="p-3.5 rounded-xl border-2 border-ember bg-surface-sunken/60 shadow-sm">
+                <div className="p-3.5 rounded-lg border-2 border-ember bg-surface-sunken/60">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2 min-w-0">
                       <span
@@ -273,7 +273,7 @@ export function PlansModal({
                     type="button"
                     onClick={() => void selectPlan(preset)}
                     disabled={busyId !== null}
-                    className={`w-full text-left p-3.5 rounded-xl border border-line bg-surface-raised transition-all ${tone.hover} hover:border-sandstone/40 disabled:opacity-60`}
+                    className={`w-full text-left p-3.5 rounded-lg border border-line bg-surface-raised transition-all ${tone.hover} hover:border-sandstone/40 disabled:opacity-60`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">

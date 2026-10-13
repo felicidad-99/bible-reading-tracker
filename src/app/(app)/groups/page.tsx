@@ -57,7 +57,7 @@ export default function GroupsPage() {
             onClick={() => setTab("mine")}
             className={`flex-1 min-h-11 rounded-full text-sm font-medium transition-all ${
               tab === "mine"
-                ? "bg-surface-raised text-ink shadow-sm"
+                ? "bg-surface-raised text-ink"
                 : "text-ink-muted hover:text-ink"
             }`}
           >
@@ -70,7 +70,7 @@ export default function GroupsPage() {
             onClick={() => setTab("discover")}
             className={`flex-1 min-h-11 rounded-full text-sm font-medium transition-all ${
               tab === "discover"
-                ? "bg-surface-raised text-ink shadow-sm"
+                ? "bg-surface-raised text-ink"
                 : "text-ink-muted hover:text-ink"
             }`}
           >

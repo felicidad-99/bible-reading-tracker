@@ -18,11 +18,11 @@ export function AuthShell({
 }) {
   return (
     <div className="min-h-dvh flex items-center justify-center md:py-10">
-      <main className="w-full max-w-[420px] bg-surface min-h-dvh md:min-h-[896px] md:rounded-[40px] md:shadow-[0_20px_60px_-15px_rgba(77,72,69,0.12)] md:border md:border-line flex flex-col overflow-hidden">
+      <main className="w-full max-w-[420px] bg-surface min-h-dvh md:min-h-[896px] md:rounded-[40px] md:border md:border-line flex flex-col overflow-hidden">
         <div className="flex-1 flex flex-col justify-center px-6 pt-5 pb-6">
           <div className="flex justify-center mb-5">
             <Link href="/" aria-label="Bible Track home">
-              <span className="w-14 h-14 rounded-2xl bg-sandstone-soft border border-line flex items-center justify-center shadow-sm">
+              <span className="w-14 h-14 rounded-lg bg-sandstone-soft border border-line flex items-center justify-center">
                 <span
                   className="material-symbols-outlined text-ember text-[30px] fill-icon"
                   aria-hidden="true"
@@ -41,7 +41,7 @@ export function AuthShell({
           </div>
 
           {valueProps && (
-            <ul className="w-full bg-surface-raised/60 border border-line rounded-xl p-3.5 mb-7 space-y-2">
+            <ul className="w-full bg-surface-raised/60 border border-line rounded-lg p-3.5 mb-7 space-y-2">
               {VALUE_PROPS.map((text) => (
                 <li key={text} className="flex items-center gap-2.5">
                   <span
